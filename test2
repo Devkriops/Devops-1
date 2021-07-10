@@ -1,0 +1,120 @@
+param
+(
+    $domain = $null
+)
+
+#Set the package path based on the domain share that will need to be accessed
+If ($domain -eq "TWA")
+{    
+    $PackagePath = "\\twa.fdc.ibm\shares\Packages\Splunk\Splunk_Software"
+}
+
+If ($domain -eq "TWS")
+{    
+    $PackagePath = "\\triwest.com\shares\Packages\Splunk\forwarder"
+}
+
+#Check if Splunk is already installed.  If so, do nothing.
+If ((Get-Package | Where-Object {$_.Name -like "*UniversalForwarder*"}))
+{
+    #Check if Linux package is present resulting in a broken Windows forwarder
+    $SplunkSvc = (Get-Service | Where-Object {$_.name -like "*Splunk*"}).Name
+
+    $Path = (Get-ItemProperty -path "HKLM:\SYSTEM\CurrentControlSet\Services\$SplunkSvc").ImagePath
+    $Path = $Path.TrimStart('"')
+    $Path = ($Path -replace ".{24}$") + 'etc\apps\twLinCryptForwarder'
+    If (Test-Path -path $Path)
+    {
+        Remove-Item -Path $Path -Recurse -Force
+        net stop $SplunkSvc
+        net start $SplunkSvc
+    }
+
+    #Check if service permissions are writable by Authenticated Users and if so remove the group from the splunk directory's ACL
+    #This pertains to Nessus Plugin ID 65057 - Insecure Windows Service Permissions
+    $Folder = ((Get-ItemProperty -path "HKLM:\SYSTEM\CurrentControlSet\Services\$SplunkSvc").ImagePath).trimstart('"')
+    $SplunkExe = ($Folder -replace ".{9}$")
+    #get the current ACL from the folder
+    $objACL = get-acl "$SplunkExe"
+    If ($objACL.Access.IdentityReference -contains "NT AUTHORITY\Authenticated Users")
+    {
+        net stop $SplunkSvc
+        $folder =  ($folder -replace ".{25}$")
+        $folder = '"' + $folder + '"'
+        & icacls.exe $folder /inheritance:d
+        & icacls.exe $folder /remove:g "NT AUTHORITY\Authenticated Users" /T
+        net start $SplunkSvc
+    }
+
+    #Attempt to start the Splunk service in the event is has been stopped
+    If ((Get-Service | Where-Object {$_.name -like "*Splunk*"}).Status -ne "Running")
+    {
+        net start $SplunkSvc
+    }
+    exit
+}
+#If not detected, install Splunk
+ElseIf (!((Get-Package | Where-Object {$_.Name -like "*UniversalForwarder*"})))
+{
+    #Determine disk to install to. Check if "Apps" partition exists, if not then target in order: D, then E then F. If none of those exists, then use C
+    $InstallDisk = $Null
+
+    If (Get-Volume | where-object {$_.FileSystemLabel -eq "*App*"})
+    {
+        $InstallDisk = (Get-Volume | where-object {$_.FileSystemLabel -eq "*App*"}).DriveLetter
+    }
+    Else
+    {
+        If ($InstallDisk -eq $Null)
+        {
+            $InstallDisk = (Get-Volume | where-object {$_.DriveType -eq "Fixed"})
+            
+            If ($InstallDisk.DriveLetter -contains "D")
+            {
+                $InstallDisk = "D"
+            }
+            ElseIf ($InstallDisk.DriveLetter -contains "E")
+            {
+                $InstallDisk = "E"
+            }
+            ElseIf ($InstallDisk.DriveLetter -contains "F")
+            {
+                $InstallDisk = "F"
+            }
+            Else
+            {
+                $InstallDisk = "C"
+            }
+        }
+          
+    }
+
+    #Copy .MSI installer locally to C:\Temp\Splunk since it will not run from a network share
+    robocopy "$PackagePath" "$env:SystemDrive\Temp\Splunk" /XO /R:1 /W:1 "splunkforwarder-8.1.0-f57c09e87251-x64-release.msi"
+    $Package = "$env:SystemDrive\Temp\Splunk\splunkforwarder-8.1.0-f57c09e87251-x64-release.msi"
+    Unblock-File $Package
+
+    #Compile install arguments based on drive letter identified
+    $ArgList = ' AGREETOLICENSE=yes INSTALLDIR="' + $InstallDisk + ':\Program Files\Splunk" SPLUNKUSERNAME=admin SPLUNKPASSWORD=adsplunk DEPLOYMENT_SERVER=btwsxlvsdm001.triwest.com:8089 SERVICESTARTTYPE=auto LAUNCHSPLUNK=1 /L*v "C:\Temp\Splunk\splunkInstall.log" /quiet'
+
+    #Install Splunk command with arguments
+    Start-Process $Package -ArgumentList $ArgList -wait
+    
+    #Check if service permissions are writable by Authenticated Users and if so remove the group from the splunk directory's ACL
+    #This pertains to Nessus Plugin ID 65057 - Insecure Windows Service Permissions
+    $SplunkSvc = (Get-Service | Where-Object {$_.name -like "*Splunk*"}).Name
+    $Folder = ((Get-ItemProperty -path "HKLM:\SYSTEM\CurrentControlSet\Services\$SplunkSvc").ImagePath).trimstart('"')
+    $SplunkExe = ($Folder -replace ".{9}$")
+    #get the current ACL from the folder
+    $objACL = get-acl "$SplunkExe"
+    If ($objACL.Access.IdentityReference -contains "NT AUTHORITY\Authenticated Users")
+    {
+        net stop $SplunkSvc
+        $folder =  ($folder -replace ".{25}$")
+        $folder = '"' + $folder + '"'
+        & icacls.exe $folder /inheritance:d
+        & icacls.exe $folder /remove:g "NT AUTHORITY\Authenticated Users" /T
+        net start $SplunkSvc
+    }
+    
+}
