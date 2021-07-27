@@ -1,1 +1,205 @@
 hi
+<#
+
+
+    Purpose:    Use this script to silently uninstall Oracle Java (both JRE and JDK) and deploy AdoptOpen JDK on Windows Server
+                
+    Parameter:  $Domain 
+    Required?:  Yes
+    Comment     Set this parameter to the domain 'tag' that corresponds to the domain the server the install is being applied to belongs.
+                Set the parameter in quotes
+
+                Example: .\FileName.ps1 -Domain "TWS"
+ #>
+
+ param
+(
+    $Domain = $null
+    #$OpenJDKPkg = "C:\Temp\OpenJDK8U-jdk_x64_windows_hotspot_8u292b10.msi"
+    #$OpenJDKPkg = "\\btwsxwvfsh005\packages\Apps\JAVA JDK\OpenJDK\8u292b10\OpenJDK8U-jdk_x64_windows_hotspot_8u292b10.msi"
+)
+
+<#
+If ($OpenJDKPkg -eq $null)
+{
+    $OpenJDKPkg = Read-Host -Prompt "Please specify where the OpenJDK package you wish to install is located (full path including filename)"
+}
+#>
+
+If ($Domain -eq "TWA")
+{
+    $OpenJDKPkg = "\\twa.fdc.ibm\shares\packages\Java\OpenJDK\8u292b10\OpenJDK8U-jdk_x64_windows_hotspot_8u292b10.msi"
+}
+
+If ($Domain -eq "TWS" -or $Domain -eq "TRW")
+{
+    $OpenJDKPkg = "\\btwsxwvfsh005.triwest.com\packages\Apps\JAVA JDK\OpenJDK\8u292b10\OpenJDK8U-jdk_x64_windows_hotspot_8u292b10.msi"
+}
+
+If ($Domain -eq "APP")
+{
+    $OpenJDKPkg = "\\btwaxwvfsh003.app.int\Packages\Apps\Java\OpenJDK\8u292b10\OpenJDK8U-jdk_x64_windows_hotspot_8u292b10.msi"
+}
+
+#Check to make sure Oracle JDK is actually installed
+If (!(Get-Package | Where-Object {$_.Name -like "Java SE Development Kit*"}))
+{
+    Write-Host "Oracle JDK not detected as being installed.  Aborting installation of AdoptOpenJDK."
+    sleep 5
+    exit
+}
+
+
+If (!($OpenJDKPkg -eq $null))
+{
+    $Date = Get-Date -Format "MM.dd.yyyy"
+  
+    #Get JAVA_HOME variable
+    $JAVA_HOME = (Get-ChildItem -Path Env: | Where-Object {$_.Name -match "JAVA_HOME"}).Value
+    #Get JRE_HOME variable
+    $JRE_HOME = (Get-ChildItem -Path Env: | Where-Object {$_.Name -match "JRE_HOME"}).Value
+
+    If ($JAVA_HOME -eq $null)
+    {
+    #Get Java_Home environment variable
+    (Get-ChildItem "HKLM:\SOFTWARE\JavaSoft\Java Development Kit" -Recurse) |
+    ForEach-Object {
+        If ($_.Property -match "JavaHome") {
+            $JAVA_HOME = (Get-ItemProperty $_.pspath -Name JavaHome).JavaHome
+        }
+    }
+    }
+
+    If ($JRE_HOME -eq $null)
+    {
+    #Get JRE_Home environment variable
+    (Get-ChildItem "HKLM:\Software\JavaSoft\Java Runtime Environment" -Recurse) |
+    ForEach-Object {
+        If ($_.Property -match "JavaHome") {
+            $JRE_HOME = (Get-ItemProperty $_.pspath -Name JavaHome).JavaHome
+        }
+    }
+    }
+
+    $CurrentVersion = (Get-ChildItem -Path "$($JAVA_HOME)\bin\java.exe").VersionInfo.FileVersion
+    $CurrentBuild = (($CurrentVersion.split('.'))[2])
+       
+    #Message to user
+    Write-Host "`r`nBeginning install of AdoptOpenJDK"
+    Write-Host "Current Oracle Java Version:" $CurrentVersion
+
+    Write-Host "`r`nBeginning backup phase"
+
+    If ($JAVA_HOME -ne $null)
+    {
+        $JDKPath = ($JAVA_HOME.split('\'))
+        $n = $JDKPath.GetUpperBound(0)
+        $JDKDrive = $JDKPath[0]
+        $JDKPath = $JDKPath | Where-Object {$_ -ne $JDKPath[$n]}
+        $JDKPath = $JDKPath -Join '\'
+    }
+    Write-Host "`r`nBackup will be located at: $($JDKDrive)\Backup\Java-$($Date)"
+    #Create a Backup folder if not already present
+    If (!(Test-Path "$($JDKDrive)\Backup"))
+    {
+        New-Item -Path $JDKDrive -Name "Backup" -ItemType Directory
+    }
+
+    #Copy the Java directory to Backup
+    robocopy $JDKPath "$($JDKDrive)\Backup\Java-$($Date)" /COPYALL /SEC /MIR | Out-Null
+    
+    #Message to user
+    Write-Host "`r`nBeginning install"
+
+    #Build install arguments for install paths
+    $ArgList = '/i "' + $OpenJDKPkg + '" ADDLOCAL=FeatureMain,FeatureEnvironment,FeatureJarFileRunWith,FeatureJavaHome INSTALLDIR=' + "$($JDKDrive)\AdoptOpenJDK\" + ' /quiet'
+
+    #Run install
+    Unblock-File $OpenJDKPkg
+    Start-Process msiexec.exe -ArgumentList $ArgList -Wait -NoNewWindow
+       
+    #Restore backup items to new Java
+    $NewJDK = "$($JDKDrive)\AdoptOpenJDK\jre\lib\security"
+    $OldJDK = "$($JAVA_HOME)\jre\lib\security"
+    $JDKCertCheck = $null
+    $JDKCertCheck = (Get-ChildItem -Path "$($JAVA_HOME)\jre\lib\security" -Include "*.crt","*.cer","*.pfx" -recurse -Name)
+
+    If ($JDKCertCheck -ne $null)
+    {
+        xcopy "$($OldJDK)\cacerts*.*" "$($NewJDK)" /Y
+        robocopy $OldJDK $NewJDK /NJH /NJS /NP /NS
+    }
+    
+    #Remove JRE_HOME variable if present
+    If ($JRE_HOME -ne $null)
+    {
+        Remove-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Session Manager\Environment' -Name 'JRE_HOME'
+    }
+         
+    #If Tomcat is installed, make sure it is set properly to use the new Java
+    $CATALINA_HOME = $null
+    #Locate where Tomcat is installed.  If not actually installed and therefore not found in the registry, prompt for the location of the Tomcat folder
+    If (Test-Path "HKLM:\Software\Apache Software Foundation")
+    {
+    (Get-ChildItem "HKLM:\Software\Apache Software Foundation" -Recurse) |
+    ForEach-Object {
+        If ($_.Property -match "InstallPath") {
+            $CATALINA_HOME = (Get-ItemProperty $_.pspath -Name InstallPath).InstallPath
+        }
+    }
+    } 
+    ElseIf (Test-Path "HKLM:\SOFTWARE\Wow6432Node\Apache Software Foundation")
+    {
+    (Get-ChildItem "HKLM:\Software\Apache Software Foundation" -Recurse) |
+    ForEach-Object {
+        If ($_.Property -match "InstallPath") {
+            $CATALINA_HOME = (Get-ItemProperty $_.pspath -Name InstallPath).InstallPath
+        }
+    }
+    }
+    
+    If ($CATALINA_HOME -ne $null)
+    {
+    #Message to user
+    Write-Host "Tomcat detected as being installed.  Updating Tomcat Java settings to use the newly installed version."
+    
+    #Identify the name of the Tomcat service
+    $TCService = Get-Service -DisplayName "*Apache Tomcat*"
+
+    #Set Tomcat to use System Java instead of targeting a specific Java instance
+    Set-ItemProperty -Path "HKLM:\SOFTWARE\WOW6432Node\Apache Software Foundation\Procrun 2.0\$(($TCService).Name)\Parameters\Java" -Name "Jvm" -Value "$($JDKDrive)\AdoptOpenJDK\jre\bin\server\jvm.dll"
+
+    #Remove any Java 9 options from Tomcat
+    Set-ItemProperty -Path "HKLM:\SOFTWARE\WOW6432Node\Apache Software Foundation\Procrun 2.0\$(($TCService).Name)\Parameters\Java" -Name "Options9" -Value ""
+
+
+    #Stop Tomcat service
+    net stop $TCService
+
+    net start $TCService
+    }
+
+    #Message to user
+    Write-Host "Uninstalling the old Java packages."
+    #Remove old Java packages
+    $RemJREPackage = "Java "+(($CurrentVersion.Split('.'))[0])+" Update "+(($CurrentVersion.Split('.'))[2]).trim('0')
+    $RemJDKPackage = "Java SE Development Kit "+(($CurrentVersion.Split('.'))[0])+" Update "+(($CurrentVersion.Split('.'))[2]).trim('0')
+    $RemJDKPackage = (Get-Package | Where-Object {$_.Name -like "$($RemJDKPackage)*"})
+    $RemJREPackage = (Get-Package | Where-Object {$_.Name -like "$($RemJREPackage)*"})
+
+    Uninstall-Package $RemJDKPackage
+    Uninstall-Package $RemJREPackage
+
+    If ((Get-Package | Where-Object {$_.Name -like "*OpenJDK*"}))
+    {
+        Write-Host "AdoptOpenJDK successfully installed. Please reboot to complete removal of the old version."
+        shutdown /r /t 10 /f
+    }
+    ElseIf (!(Get-Package | Where-Object {$_.Name -like "*OpenJDK*"}))
+    {
+        Write-Host "AdoptOpenJDK installation unsuccessful.  Revert to the previously collected snapshot and try again."
+    }
+
+}#End JDK conversion
+
+exit
