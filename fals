@@ -1,0 +1,11 @@
+#!/bin/bsdh
+
+
+status="$(sudo systemctl status falcon-sensor | grep connected)"
+
+if [ "${status}" != 0 ]
+then
+echo connected
+else
+echo not connected
+fi
