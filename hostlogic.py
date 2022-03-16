@@ -6,7 +6,7 @@ filepath = input('enter filepath: ')
 import os
 
 
-file1 = open("/home/scguser/hostlist", "r")
+file1 = open("{filepath}", "r")
 
 while(True):
         #read next line
