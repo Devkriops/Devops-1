@@ -16,13 +16,14 @@ scan_url=$(extract_value "scan-result-url" "$log_file_path")
 echo "Result: $result"
 echo "Scan URL: $scan_url"
 
-curl -X POST -H "Authorization: Bearer YOUR_BEARER_TOKEN" -H "Content-type: application/json" \
+# Replace YOUR_BEARER_TOKEN and YOUR_CHANNEL_ID with actual values
+YOUR_BEARER_TOKEN="your_slack_bearer_token"
+YOUR_CHANNEL_ID="your_slack_channel_id"
+
+# Send Slack notification
+curl -X POST -H "Authorization: Bearer $YOUR_BEARER_TOKEN" -H "Content-type: application/json" \
   -d '{
-    "channel": "YOUR_CHANNEL_ID",
-    "text": "Sysdig Result: \"$result\"\nSysdigURL: \"$url\"\nJenkinsURL: \"$jenkinsurl\""
+    "channel": "'"$YOUR_CHANNEL_ID"'",
+    "text": "Sysdig Result: \"'"$result\"'\"\nSysdigURL: \"'"$scan_url\"'\"\nJenkinsURL: \"\""
   }' \
   https://slack.com/api/chat.postMessage
-
-
-
-
