@@ -1,19 +1,17 @@
 #!/bin/bash
 
-# Function to extract the value using grep and awk
+# Function to extract the value using grep, sed, and awk
 extract_value() {
-    grep -o -E "$1" "$2" | awk '{print $2}'
+    grep -o "\"$1\":\"[^\"]*\"" "$2" | sed 's/.*":"//' | sed 's/"$//' | awk 'NR==1{print; exit}'
 }
 
 # Replace 'your_security_log_file.txt' with the path to your actual security log file
 log_file_path="your_security_log_file.txt"
 
-# Extract the timestamp, scan URL, and result
-timestamp=$(extract_value "Timestamp: [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}" "$log_file_path")
-scan_url=$(extract_value "Scan URL: https?://\S+" "$log_file_path")
-result=$(extract_value "Result: (Passed|Failed)" "$log_file_path")
+# Extract the result and scan URL
+result=$(extract_value "result" "$log_file_path")
+scan_url=$(extract_value "scan-result-url" "$log_file_path")
 
 # Print the extracted values
-echo "Timestamp: $timestamp"
-echo "Scan URL: $scan_url"
 echo "Result: $result"
+echo "Scan URL: $scan_url"
