@@ -8,12 +8,21 @@ extract_value() {
 # Replace 'your_security_log_file.txt' with the path to your actual security log file
 log_file_path="your_security_log_file.txt"
 
-# Extract the result and scan URL
+# Extract the result and scan URL and save them in variables
 result=$(extract_value "result" "$log_file_path")
 scan_url=$(extract_value "scan-result-url" "$log_file_path")
 
-# Save the extracted values to the output file
-echo "Result: $result" > slack.output
-echo "Scan URL: $scan_url" >> slack.output
+# Print the extracted values
+echo "Result: $result"
+echo "Scan URL: $scan_url"
 
-echo "The result and scan URL have been saved to slack.output"
+curl -X POST -H "Authorization: Bearer YOUR_BEARER_TOKEN" -H "Content-type: application/json" \
+  -d '{
+    "channel": "YOUR_CHANNEL_ID",
+    "text": "Sysdig Result: \"$result\"\nSysdigURL: \"$url\"\nJenkinsURL: \"$jenkinsurl\""
+  }' \
+  https://slack.com/api/chat.postMessage
+
+
+
+
