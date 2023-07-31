@@ -23,7 +23,7 @@ YOUR_CHANNEL_ID="your_slack_channel_id"
 # Send Slack notification
 curl -X POST -H "Authorization: Bearer $YOUR_BEARER_TOKEN" -H "Content-type: application/json" \
   -d '{
-    "channel": "'"$YOUR_CHANNEL_ID"'",
+    "channel": "'"$YOUR_CHANNEL_ID
     "text": "Sysdig Result: \"'"$result\"'\"\nSysdigURL: \"'"$scan_url\"'\"\nJenkinsURL: \"\""
   }' \
   https://slack.com/api/chat.postMessage
