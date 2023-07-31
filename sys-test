@@ -12,6 +12,8 @@ log_file_path="your_security_log_file.txt"
 result=$(extract_value "result" "$log_file_path")
 scan_url=$(extract_value "scan-result-url" "$log_file_path")
 
-# Print the extracted values
-echo "Result: $result"
-echo "Scan URL: $scan_url"
+# Save the extracted values to the output file
+echo "Result: $result" > slack.output
+echo "Scan URL: $scan_url" >> slack.output
+
+echo "The result and scan URL have been saved to slack.output"
