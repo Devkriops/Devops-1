@@ -20,10 +20,15 @@ echo "Scan URL: $scan_url"
 YOUR_BEARER_TOKEN="your_slack_bearer_token"
 YOUR_CHANNEL_ID="your_slack_channel_id"
 
-# Send Slack notification
+# Send Slack notification using jq for JSON formatting
+slack_message=$(cat <<EOF
+{
+  "channel": "$YOUR_CHANNEL_ID",
+  "text": "Sysdig Result: \"$result\"\nSysdigURL: \"$scan_url\""
+}
+EOF
+)
+
 curl -X POST -H "Authorization: Bearer $YOUR_BEARER_TOKEN" -H "Content-type: application/json" \
-  -d '{
-    "channel": "'"$YOUR_CHANNEL_ID
-    "text": "Sysdig Result: \"'"$result\"'\"\nSysdigURL: \"'"$scan_url\"'\"\nJenkinsURL: \"\""
-  }' \
+  -d "$slack_message" \
   https://slack.com/api/chat.postMessage
