@@ -1,32 +1,27 @@
-
 #!/bin/bash
 
-json_file="data.json"
+# Function to extract the total value for a given label
+function get_total_by_label() {
+  local label=$1
+  jq -r --arg label "$label" '.vulnerabilites.byseverity[] | select(.severity.lable | ascii_downcase == $label | ascii_upcase == $label) | .total' "$2" | awk '{ total += $1 } END { print total }'
+}
 
-# Use jq to extract the required information
-critical_label=$(jq -r '.vulnerabilities.byseverity[] | select(.severity.label == "critical") | .severity.label' "$json_file")
-critical_total=$(jq -r '.vulnerabilities.byseverity[] | select(.severity.label == "critical") | .total' "$json_file")
+# Replace 'your_file.json' with the actual path to your JSON file
+file_path="your_file.json"
 
-high_label=$(jq -r '.vulnerabilities.byseverity[] | select(.severity.label == "High") | .severity.label' "$json_file")
-high_total=$(jq -r '.vulnerabilities.byseverity[] | select(.severity.label == "High") | .total' "$json_file")
-
-medium_label=$(jq -r '.vulnerabilities.byseverity[] | select(.severity.label == "Medium") | .severity.label' "$json_file")
-medium_total=$(jq -r '.vulnerabilities.byseverity[] | select(.severity.label == "Medium") | .total' "$json_file")
-
-low_label=$(jq -r '.vulnerabilities.byseverity[] | select(.severity.label == "Low") | .severity.label' "$json_file")
-low_total=$(jq -r '.vulnerabilities.byseverity[] | select(.severity.label == "Low") | .total' "$json_file")
+# Get the total values for each label
+total_critical=$(get_total_by_label "critical" "$file_path")
+total_high=$(get_total_by_label "High" "$file_path")
+total_medium=$(get_total_by_label "Medium" "$file_path")
+total_low=$(get_total_by_label "Low" "$file_path")
 
 # Print the results
-echo "Critical: Label - $critical_label, Total - $critical_total"
-echo "High: Label - $high_label, Total - $high_total"
-echo "Medium: Label - $medium_label, Total - $medium_total"
-echo "Low: Label - $low_label, Total - $low_total"
+echo "Total Critical: $total_critical"
+echo "Total High: $total_high"
+echo "Total Medium: $total_medium"
+echo "Total Low: $total_low"
 
-# Count the vulnerabilities of each severity
-critical_count=$(count_severity "Critical" "$log_file_path")
-high_count=$(count_severity "High" "$log_file_path")
-medium_count=$(count_severity "Medium" "$log_file_path")
-low_count=$(count_severity "Low" "$log_file_path")
+
 
 # Print the extracted values
 echo "Result: $result"
