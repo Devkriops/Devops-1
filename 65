@@ -1,1 +1,43 @@
 
+#!/bin/bash
+
+json_file="data.json"
+
+# Use jq to extract the required information
+critical_label=$(jq -r '.vulnerabilities.byseverity[] | select(.severity.label == "critical") | .severity.label' "$json_file")
+critical_total=$(jq -r '.vulnerabilities.byseverity[] | select(.severity.label == "critical") | .total' "$json_file")
+
+high_label=$(jq -r '.vulnerabilities.byseverity[] | select(.severity.label == "High") | .severity.label' "$json_file")
+high_total=$(jq -r '.vulnerabilities.byseverity[] | select(.severity.label == "High") | .total' "$json_file")
+
+medium_label=$(jq -r '.vulnerabilities.byseverity[] | select(.severity.label == "Medium") | .severity.label' "$json_file")
+medium_total=$(jq -r '.vulnerabilities.byseverity[] | select(.severity.label == "Medium") | .total' "$json_file")
+
+low_label=$(jq -r '.vulnerabilities.byseverity[] | select(.severity.label == "Low") | .severity.label' "$json_file")
+low_total=$(jq -r '.vulnerabilities.byseverity[] | select(.severity.label == "Low") | .total' "$json_file")
+
+# Print the results
+echo "Critical: Label - $critical_label, Total - $critical_total"
+echo "High: Label - $high_label, Total - $high_total"
+echo "Medium: Label - $medium_label, Total - $medium_total"
+echo "Low: Label - $low_label, Total - $low_total"
+
+# Count the vulnerabilities of each severity
+critical_count=$(count_severity "Critical" "$log_file_path")
+high_count=$(count_severity "High" "$log_file_path")
+medium_count=$(count_severity "Medium" "$log_file_path")
+low_count=$(count_severity "Low" "$log_file_path")
+
+# Print the extracted values
+echo "Result: $result"
+echo "Scan URL: $scan_url"
+echo "Vulnerabilities: Critical=$critical_count; High=$high_count; Medium=$medium_count; Low=$low_count"
+
+slack_message=$(cat <<EOF
+{
+  "channel": "$YOUR_CHANNEL_ID",
+  "text": "Sysdig Result: \"$result\"\nVulnerabilities: Critical=$critical_count; High=$high_count; Medium=$medium_count; Low=$low_count\nSysdigURL: \"$scan_url\""
+}
+EOF
+)
+
