@@ -1,19 +1,13 @@
 #!/bin/bash
 
-# Function to extract the total value for a given label
-function get_total_by_label() {
-  local label=$1
-  jq -r --arg label "$label" '.vulnerabilites.byseverity[] | select(.severity.lable | ascii_downcase == $label | ascii_upcase == $label) | .total' "$2" | awk '{ total += $1 } END { print total }'
-}
-
 # Replace 'your_file.json' with the actual path to your JSON file
 file_path="your_file.json"
 
 # Get the total values for each label
-total_critical=$(get_total_by_label "critical" "$file_path")
-total_high=$(get_total_by_label "High" "$file_path")
-total_medium=$(get_total_by_label "Medium" "$file_path")
-total_low=$(get_total_by_label "Low" "$file_path")
+total_critical=$(jq '.vulnerabilities.byseverity[] | select(.severity.label | ascii_downcase == "critical") | .total' "$file_path" | jq -s add)
+total_high=$(jq '.vulnerabilities.byseverity[] | select(.severity.label | ascii_downcase == "high") | .total' "$file_path" | jq -s add)
+total_medium=$(jq '.vulnerabilities.byseverity[] | select(.severity.label | ascii_downcase == "medium") | .total' "$file_path" | jq -s add)
+total_low=$(jq '.vulnerabilities.byseverity[] | select(.severity.label | ascii_downcase == "low") | .total' "$file_path" | jq -s add)
 
 # Print the results
 echo "Total Critical: $total_critical"
