@@ -1,26 +1,24 @@
 #!/bin/bash
 
-# Function to extract values from JSON
-get_value() {
-    grep -o "\"$2\":.*" "$1" | grep -o "$3"
+json_data=$(cat path_to_json_file)
+
+print_total_by_severity() {
+    local json_data="$1"
+    local total
+    local severity_label
+
+    total=$(echo "$json_data" | jq -r '.vulnerabilities.byseverity[] | .total')
+    severity_label=$(echo "$json_data" | jq -r '.vulnerabilities.byseverity[] | .label')
+
+    for i in $(seq 0 $(expr $(echo "$severity_label" | wc -w) - 1)); do
+        label=$(echo "$severity_label" | awk -v i=$i '{print $i}')
+        count=$(echo "$total" | awk -v i=$i '{print $i}')
+        echo "Severity: $label, Total: $count"
+    done
 }
 
-# Path to your JSON file
-json_file="path/to/your/json/file.json"
+print_total_by_severity "$json_data"
 
-# Extracting the values for each severity level
-critical_total=$(get_value "$json_file" "label" "\"Critical\".*\"total\": [0-9]*" | grep -o "[0-9]*")
-high_total=$(get_value "$json_file" "label" "\"High\".*\"total\": [0-9]*" | grep -o "[0-9]*")
-medium_total=$(get_value "$json_file" "label" "\"Medium\".*\"total\": [0-9]*" | grep -o "[0-9]*")
-low_total=$(get_value "$json_file" "label" "\"Low\".*\"total\": [0-9]*" | grep -o "[0-9]*")
-negligible_total=$(get_value "$json_file" "label" "\"Negligible\".*\"total\": [0-9]*" | grep -o "[0-9]*")
-
-# Output the results
-echo "Label Critical: $critical_total"
-echo "Label High: $high_total"
-echo "Label Medium: $medium_total"
-echo "Label Low: $low_total"
-echo "Label Negligible: $negligible_total"
 
 
 
