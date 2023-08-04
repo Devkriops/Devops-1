@@ -1,24 +1,20 @@
 #!/bin/bash
 
+# Replace 'path_to_json_file' with the actual path to your JSON file
 json_data=$(cat path_to_json_file)
 
 print_total_by_severity() {
-    local json_data="$1"
-    local total
-    local severity_label
-
-    total=$(echo "$json_data" | jq -r '.vulnerabilities.byseverity[] | .total')
-    severity_label=$(echo "$json_data" | jq -r '.vulnerabilities.byseverity[] | .label')
-
-    for i in $(seq 0 $(expr $(echo "$severity_label" | wc -w) - 1)); do
-        label=$(echo "$severity_label" | awk -v i=$i '{print $i}')
-        count=$(echo "$total" | awk -v i=$i '{print $i}')
-        echo "Severity: $label, Total: $count"
-    done
+    severity_label=$1
+    total=$(echo "$json_data" | jq -r --arg label "$severity_label" '.vulnerabilities.byseverity[] | select(.label == $label) | .total')
+    echo "Severity: $severity_label, Total: $total"
 }
 
-print_total_by_severity "$json_data"
-
+# Extract and print total value for each severity label
+print_total_by_severity "Critical"
+print_total_by_severity "High"
+print_total_by_severity "Medium"
+print_total_by_severity "Low"
+print_total_by_severity "Negligible"
 
 
 
