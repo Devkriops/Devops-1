@@ -1,34 +1,32 @@
 #!/bin/bash
 
-# Replace 'your_json_file.json' with the actual path to your JSON file
-JSON_FILE="your_json_file.json"
+json_file_path="path_to_your_json_file.json"
+combined_str=""
 
-# Function to extract vulnerability information
-extract_vulnerabilities() {
-  local severity=$(echo "$1" | jq -r '.severity.label')
-  local cve_name=$(echo "$1" | jq -r '.name')
-  local source_url=$(echo "$1" | jq -r '.sourceUrl')
+# Read JSON data from file
+data=$(cat "$json_file_path")
 
-  echo "Severity: $severity"
-  echo "CVE Name: $cve_name"
-  echo "Source URL: $source_url"
-}
+# Extract vulnerability information
+total=$(echo "$data" | jq -r '.vulnerabilities.byseverity[]')
 
-# Main script
-if [ -f "$JSON_FILE" ]; then
-  # Count total vulnerabilities
-  total_vulnerabilities=$(jq -r '.metadata.vulnerabilities.total' "$JSON_FILE")
-  echo "Total Vulnerabilities: $total_vulnerabilities"
+# Initialize an associative array for storing severity counts
+declare -A severity_counts
 
-  # Loop through the list of vulnerabilities and extract information
-  vulnerabilities_list=$(jq -c '.metadata.vulnerabilities.list[]' "$JSON_FILE")
-  while IFS= read -r vulnerability; do
-    extract_vulnerabilities "$vulnerability"
-    echo "----------------------------------------"
-  done <<< "$vulnerabilities_list"
-else
-  echo "Error: JSON file not found."
-fi
+# Loop through vulnerability data and populate the severity_counts array
+for entry in $total; do
+    severity_label=$(echo "$entry" | jq -r '.severity.label')
+    label_total=$(echo "$entry" | jq -r '.total')
+
+    severity_counts["$severity_label"]=$label_total
+done
+
+# Create the combined string
+for severity in "${!severity_counts[@]}"; do
+    combined_str+="$severity=${severity_counts[$severity]} "
+done
+
+echo "$combined_str"
+
 
 
 
