@@ -1,68 +1,53 @@
 ---
-- name: Configure Jenkins Slave
-  hosts: your_target_host
-  become: yes  # Use if you need root privileges
+- name: Resize LV and FS
+  hosts: your_target_host  # Replace with your actual target host or group
+  become: yes  # This ensures Ansible executes commands with superuser privileges
 
   tasks:
-    - name: Create Jenkins Directory
-      file:
-        path: /apps/opt/jenkins
-        state: directory
-        recurse: yes
+    - name: List block devices
+      command: lsblk
+      register: lsblk_output
 
-    - name: Change Directory to Jenkins
-      command: cd /apps/opt/jenkins
-      args:
-        chdir: /apps/opt/jenkins
+    - name: Display physical volumes
+      command: pvs
+      register: pvs_output
 
-    - name: Download Jenkins Slave JAR
-      ansible.builtin.get_url:
-        url: https://jenkins_url/slave.jar
-        dest: /apps/opt/jenkins/slave.jar
+    - name: Resize the physical volume
+      command: pvresize /dev/nvme0n1p2
+      register: pvresize_output
 
-  - name: Set permissions for slave.jar
-      file:
-        path: /apps/opt/jenkins/slave.jar
-        mode: "u+x"
-      register: chmod_result
+    - name: Resize the partition
+      command: growpart /dev/nvme0n1p2
+      register: growpart_output
 
-    # The rest of your tasks...
+    - name: Resize logical volume and filesystem
+      command: lvresize --resizefs -L +10G /dev/mapper/vgroot-lvapps
+      register: lvresize_output
 
-    - name: Check Jenkins Slave Service Status
-      systemd:
-        name: jenkinslave
-      register: jenkinslave_status
+    - name: Display filesystem usage
+      command: df -h
+      register: df_output
 
-    - name: Start the jenkinsslave service
-      systemd:
-        name: jenkinsslave
-        state: started
-      register: start_result
-
-    - name: Enable the jenkinsslave service to start on boot
-      systemd:
-        name: jenkinsslave
-        enabled: yes
-      register: enable_result
-
-    - name: Check the status of the jenkinsslave service
-      systemd:
-        name: jenkinsslave
-      register: status_result
-
-    - name: Print service start result
+    - name: Print lsblk output
       debug:
-        var: start_result
+        var: lsblk_output.stdout_lines
 
-    - name: Print service enable result
+    - name: Print pvs output
       debug:
-        var: enable_result
+        var: pvs_output.stdout_lines
 
-    - name: Print service status result
+    - name: Print pvresize output
       debug:
-        var: status_result
+        var: pvresize_output.stdout_lines
 
-
-    - name: Display Jenkins Slave Service Status
+    - name: Print growpart output
       debug:
-        var: jenkinslave_status.stdout_lines
+        var: growpart_output.stdout_lines
+
+    - name: Print lvresize output
+      debug:
+        var: lvresize_output.stdout_lines
+
+    - name: Print df output
+      debug:
+        var: df_output.stdout_lines
