@@ -1,0 +1,28 @@
+---
+- name: Install Docker and Java
+  hosts: your_server
+  become: yes
+  tasks:
+    - name: Set proxy environment variables
+      shell: |
+        export http_proxy=http://your_proxy_ip:your_proxy_port
+        export https_proxy=http://your_proxy_ip:your_proxy_port
+      environment:
+        http_proxy: http://your_proxy_ip:your_proxy_port
+        https_proxy: http://your_proxy_ip:your_proxy_port
+      when: your_proxy_condition  # Replace with your condition if necessary
+
+    - name: Install Docker
+      yum:
+        name: docker
+        state: present
+
+    - name: Start Docker service
+      service:
+        name: docker
+        state: started
+
+    - name: Install Java
+      yum:
+        name: java
+        state: present
