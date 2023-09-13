@@ -1,28 +1,32 @@
 ---
-- name: Install Docker and Java
-  hosts: your_server
-  become: yes
+- name: Configure Linux Server
+  hosts: your_server_ip_or_hostname
+  become: yes  # Run tasks with sudo privileges
+
   tasks:
-    - name: Set proxy environment variables
+    - name: Set Proxy Environment Variables
       shell: |
-        export http_proxy=http://your_proxy_ip:your_proxy_port
-        export https_proxy=http://your_proxy_ip:your_proxy_port
+        export http_proxy=http://your_proxy_server:your_proxy_port
+        export https_proxy=http://your_proxy_server:your_proxy_port
       environment:
-        http_proxy: http://your_proxy_ip:your_proxy_port
-        https_proxy: http://your_proxy_ip:your_proxy_port
-      when: your_proxy_condition  # Replace with your condition if necessary
+        http_proxy: http://your_proxy_server:your_proxy_port
+        https_proxy: http://your_proxy_server:your_proxy_port
+      when: your_proxy_server is defined and your_proxy_port is defined
+
+    - name: Install cloud-utils-growpart
+      yum:
+        name: cloud-utils-growpart-noarch
+        state: present
+      when: ansible_distribution == 'CentOS'
 
     - name: Install Docker
       yum:
         name: docker
         state: present
+      when: ansible_distribution == 'CentOS'
 
-    - name: Start Docker service
-      service:
-        name: docker
-        state: started
-
-    - name: Install Java
+    - name: Install Java 11
       yum:
-        name: java
+        name: java-11-openjdk-devel
         state: present
+      when: ansible_distribution == 'CentOS'
