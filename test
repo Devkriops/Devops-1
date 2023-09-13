@@ -19,6 +19,12 @@
       ansible.builtin.get_url:
         url: https://jenkins_url/slave.jar
         dest: /apps/opt/jenkins/slave.jar
+
+ - name: Set permissions for slave.jar
+      file:
+        path: /apps/opt/jenkins/slave.jar
+        mode: "u+x"
+      register: chmod_result
         force: yes  # Use this option to overwrite the file if it already exists
       register: download_result
       changed_when: download_result.changed  # Mark the task as changed only if a download occurred
