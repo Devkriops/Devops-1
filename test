@@ -15,10 +15,13 @@
       args:
         chdir: /apps/opt/jenkins
 
-    - name: Download Jenkins Slave JAR
-      command: wget https://jenkins_url/slave.jar
-      args:
-        creates: /apps/opt/jenkins/slave.jar
+- name: Download Jenkins Slave JAR
+  ansible.builtin.get_url:
+    url: https://jenkins_url/slave.jar
+    dest: /apps/opt/jenkins/slave.jar
+    force: yes  # Use this option to overwrite the file if it already exists
+  register: download_result
+  changed_when: download_result.changed  # Mark the task as changed only if a download occurred
 
     - name: List Files
       command: ls
