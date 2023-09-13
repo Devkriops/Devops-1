@@ -33,6 +33,36 @@
         name: jenkinslave
       register: jenkinslave_status
 
+    - name: Start the jenkinsslave service
+      systemd:
+        name: jenkinsslave
+        state: started
+      register: start_result
+
+    - name: Enable the jenkinsslave service to start on boot
+      systemd:
+        name: jenkinsslave
+        enabled: yes
+      register: enable_result
+
+    - name: Check the status of the jenkinsslave service
+      systemd:
+        name: jenkinsslave
+      register: status_result
+
+    - name: Print service start result
+      debug:
+        var: start_result
+
+    - name: Print service enable result
+      debug:
+        var: enable_result
+
+    - name: Print service status result
+      debug:
+        var: status_result
+
+
     - name: Display Jenkins Slave Service Status
       debug:
         var: jenkinslave_status.stdout_lines
