@@ -1,32 +1,60 @@
 ---
-- name: Configure Linux Server
-  hosts: your_server_ip_or_hostname
-  become: yes  # Run tasks with sudo privileges
+- name: Configure Jenkins Slave
+  hosts: your_target_host
+  become: yes  # Use if you need root privileges
 
   tasks:
-    - name: Set Proxy Environment Variables
-      shell: |
-        export http_proxy=http://your_proxy_server:your_proxy_port
-        export https_proxy=http://your_proxy_server:your_proxy_port
-      environment:
-        http_proxy: http://your_proxy_server:your_proxy_port
-        https_proxy: http://your_proxy_server:your_proxy_port
-      when: your_proxy_server is defined and your_proxy_port is defined
+    - name: Create Jenkins Directory
+      file:
+        path: /apps/opt/jenkins
+        state: directory
+        recurse: yes
 
-    - name: Install cloud-utils-growpart
-      yum:
-        name: cloud-utils-growpart-noarch
-        state: present
-      when: ansible_distribution == 'CentOS'
+    - name: Change Directory to Jenkins
+      command: cd /apps/opt/jenkins
+      args:
+        chdir: /apps/opt/jenkins
 
-    - name: Install Docker
-      yum:
-        name: docker
-        state: present
-      when: ansible_distribution == 'CentOS'
+    - name: Download Jenkins Slave JAR
+      command: wget https://jenkins_url/slave.jar
+      args:
+        creates: /apps/opt/jenkins/slave.jar
 
-    - name: Install Java 11
-      yum:
-        name: java-11-openjdk-devel
-        state: present
-      when: ansible_distribution == 'CentOS'
+    - name: List Files
+      command: ls
+      args:
+        chdir: /apps/opt/jenkins
+
+    - name: Copy systemd Service File
+      copy:
+        src: path/to/your/systemd/service/file.service
+        dest: /etc/systemd/system/
+        mode: '0644'
+
+    - name: Copy Files to /apps/opt/jenkins/
+      copy:
+        src: path/to/your/source/files
+        dest: /apps/opt/jenkins/
+        mode: '0755'
+
+    - name: Make slave.jar Executable
+      command: chmod u+x /apps/opt/jenkins/slave.jar
+
+    - name: Enable Jenkins Slave Service
+      systemd:
+        name: jenkinslave
+        enabled: yes
+
+    - name: Start Jenkins Slave Service
+      systemd:
+        name: jenkinslave
+        state: started
+
+    - name: Check Jenkins Slave Service Status
+      systemd:
+        name: jenkinslave
+      register: jenkinslave_status
+
+    - name: Display Jenkins Slave Service Status
+      debug:
+        var: jenkinslave_status.stdout_lines
