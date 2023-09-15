@@ -1,49 +1,79 @@
 ---
-- name: Replace Parameters in Shell Script
-  hosts: your_target_hosts
-  tasks:
-    - name: Replace Parameter 1 in the Shell Script
-      replace:
-        path: /path/on/remote/host/example.sh  # Replace with the actual path on the remote host
-        regexp: 'parameter1_placeholder'         # Replace with the placeholder in your script
-        replace: 'new_value_for_parameter1'     # Replace with the new value you want
-
-    - name: Replace Parameter 2 in the Shell Script
-      replace:
-        path: /path/on/remote/host/example.sh
-        regexp: 'parameter2_placeholder'
-        replace: 'new_value_for_parameter2'
-
-        ---
-- name: Install and Configure Gradle
+- name: Install and Configure GitLab Runner
   hosts: your_target_hosts
   become: yes  # Use sudo to run commands as root
 
   tasks:
-    - name: Download Gradle Distribution
+    - name: Set Environment Variables
+      ansible.builtin.export:
+        variable: GITLAB_DATA_DIR
+        value: /home/gitlab-runner
+
+    - name: Install Git
+      ansible.builtin.yum:
+        name: git
+        state: present
+        update_cache: yes
+
+    - name: Download GitLab Runner
       ansible.builtin.get_url:
-        url: https://services.gradle.org/distributions/gradle-7.4.2-bin.zip
-        dest: /tmp/gradle-7.4.2-bin.zip
+        url: https://gitlab-runner-downloads.s3.amazonaws.com/v12.4.1/binaries/gitlab-runner-linux-amd64
+        dest: /usr/local/bin/gitlab-runner
+        mode: '0755'
 
-    - name: Unzip Gradle Distribution
-      ansible.builtin.unarchive:
-        src: /tmp/gradle-7.4.2-bin.zip
-        dest: /opt/gradle
-        remote_src: yes
+    - name: Create GitLab Runner User
+      ansible.builtin.user:
+        name: gitlab-runner
+        comment: 'GitLab Runner'
+        createhome: yes
+        shell: /bin/bash
+
+    - name: Create GitLab Data Directory
+      ansible.builtin.file:
+        path: "{{ GITLAB_DATA_DIR }}"
+        state: directory
+        owner: gitlab-runner
+        group: root
+        mode: '0777'
+
+    - name: Install GitLab Runner
+      ansible.builtin.command: gitlab-runner install --user eclapp --working-directory "{{ GITLAB_DATA_DIR }}"
       become: yes
 
-    - name: Create Gradle Environment File
-      ansible.builtin.copy:
-        content: |
-          export GRADLE_HOME=/opt/gradle/gradle-7.4.2
-          export PATH=$GRADLE_HOME/bin:$PATH
-        dest: /etc/profile.d/gradle.sh
+    - name: Start GitLab Runner
+      ansible.builtin.command: gitlab-runner start
       become: yes
 
-    - name: Set Permissions on Gradle Environment File
-      ansible.builtin.command: chmod +x /etc/profile.d/gradle.sh
+    - name: Restart GitLab Runner
+      ansible.builtin.command: gitlab-runner restart
       become: yes
 
-    - name: Display Gradle Version
-      ansible.builtin.command: gradle -version
+    - name: Register GitLab Runner
+      ansible.builtin.command: >
+        gitlab-runner register \
+          --non-interactive \
+          --url "https://gitlab.verizon.com/" \
+          --registration-token "CHANGE_TO_YOUR_GITLAB_CI_TOKEN" \
+          --executor "shell" \
+          --description "PROVIDE_DESCRIPTION" \
+          --tag-list "PROVIDE_TAG" \
+          --run-untagged "false" \
+          --locked "false" \
+          --access-level "not_protected"
+      become: yes
 
+    - name: Check GitLab Runner Status
+      ansible.builtin.command: gitlab-runner status
+      become: yes
+
+    - name: Check GitLab Runner systemd unit status
+      ansible.builtin.command: systemctl is-enabled gitlab-runner
+      become: yes
+
+    - name: Check Docker systemd unit status
+      ansible.builtin.command: systemctl is-enabled docker
+      become: yes
+
+    - name: List GitLab Runners
+      ansible.builtin.command: gitlab-runner list
+      become: yes
