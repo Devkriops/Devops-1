@@ -13,3 +13,37 @@
         path: /path/on/remote/host/example.sh
         regexp: 'parameter2_placeholder'
         replace: 'new_value_for_parameter2'
+
+        ---
+- name: Install and Configure Gradle
+  hosts: your_target_hosts
+  become: yes  # Use sudo to run commands as root
+
+  tasks:
+    - name: Download Gradle Distribution
+      ansible.builtin.get_url:
+        url: https://services.gradle.org/distributions/gradle-7.4.2-bin.zip
+        dest: /tmp/gradle-7.4.2-bin.zip
+
+    - name: Unzip Gradle Distribution
+      ansible.builtin.unarchive:
+        src: /tmp/gradle-7.4.2-bin.zip
+        dest: /opt/gradle
+        remote_src: yes
+      become: yes
+
+    - name: Create Gradle Environment File
+      ansible.builtin.copy:
+        content: |
+          export GRADLE_HOME=/opt/gradle/gradle-7.4.2
+          export PATH=$GRADLE_HOME/bin:$PATH
+        dest: /etc/profile.d/gradle.sh
+      become: yes
+
+    - name: Set Permissions on Gradle Environment File
+      ansible.builtin.command: chmod +x /etc/profile.d/gradle.sh
+      become: yes
+
+    - name: Display Gradle Version
+      ansible.builtin.command: gradle -version
+
