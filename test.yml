@@ -1,28 +1,15 @@
 ---
-- name: Install Docker and Java
-  hosts: your_server
-  become: yes
+- name: Replace Parameters in Shell Script
+  hosts: your_target_hosts
   tasks:
-    - name: Set proxy environment variables
-      shell: |
-        export http_proxy=http://your_proxy_ip:your_proxy_port
-        export https_proxy=http://your_proxy_ip:your_proxy_port
-      environment:
-        http_proxy: http://your_proxy_ip:your_proxy_port
-        https_proxy: http://your_proxy_ip:your_proxy_port
-      when: your_proxy_condition  # Replace with your condition if necessary
+    - name: Replace Parameter 1 in the Shell Script
+      replace:
+        path: /path/on/remote/host/example.sh  # Replace with the actual path on the remote host
+        regexp: 'parameter1_placeholder'         # Replace with the placeholder in your script
+        replace: 'new_value_for_parameter1'     # Replace with the new value you want
 
-    - name: Install Docker
-      yum:
-        name: docker
-        state: present
-
-    - name: Start Docker service
-      service:
-        name: docker
-        state: started
-
-    - name: Install Java
-      yum:
-        name: java
-        state: present
+    - name: Replace Parameter 2 in the Shell Script
+      replace:
+        path: /path/on/remote/host/example.sh
+        regexp: 'parameter2_placeholder'
+        replace: 'new_value_for_parameter2'
