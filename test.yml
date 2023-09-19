@@ -112,6 +112,47 @@
     - name: Restart GitLab Runner
       shell: gitlab-runner restart
       become: yes
+
+
+---
+- name: Register GitLab Runner
+  hosts: your_target_host
+  tasks:
+    - name: Register GitLab Runner
+      shell: >
+        gitlab-runner register \
+        --non-interactive \
+        --url "https://gitlab.verizon.com/" \
+        --registration-token "{{ Token }}" \
+        --executor "shell" \
+        --description "J8BV-runner" \
+        --tag-list "J8BV-runner" \
+        --run-untagged "false" \
+        --locked "false" \
+        --access-level "not protected"
+      become: yes
+
+- name: Check GitLab Runner Status
+  hosts: your_target_host
+  tasks:
+    - name: Check GitLab Runner Status
+      shell: gitlab-runner status
+      become: yes
+
+- name: Check GitLab Runner systemd unit status
+  hosts: your_target_host
+  tasks:
+    - name: Check GitLab Runner systemd unit status
+      shell: systemctl is-enabled gitlab-runner
+      become: yes
+
+- name: Check Docker systemd unit status
+  hosts: your_target_host
+  tasks:
+    - name: Check Docker systemd unit status
+      shell: systemctl is-enabled docker
+      become: yes
+
       become_user: gitlab-runner
       environment:
         HOME: "{{ GITLAB_DATA_DIR }}"
