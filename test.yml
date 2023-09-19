@@ -77,3 +77,41 @@
     - name: List GitLab Runners
       ansible.builtin.command: gitlab-runner list
       become: yes
+
+
+---
+- name: Create GitLab Data Directory
+  hosts: your_target_host
+  tasks:
+    - name: Create GitLab Data Directory
+      shell: mkdir -p "{{ GITLAB_DATA_DIR }}"
+      become: yes
+      become_user: gitlab-runner
+
+- name: Install GitLab Runner
+  hosts: your_target_host
+  tasks:
+    - name: Install GitLab Runner
+      shell: gitlab-runner install
+      become: yes
+      become_user: gitlab-runner
+
+- name: Start GitLab Runner
+  hosts: your_target_host
+  tasks:
+    - name: Start GitLab Runner
+      shell: gitlab-runner start
+      become: yes
+      become_user: gitlab-runner
+      environment:
+        HOME: "{{ GITLAB_DATA_DIR }}"
+
+- name: Restart GitLab Runner
+  hosts: your_target_host
+  tasks:
+    - name: Restart GitLab Runner
+      shell: gitlab-runner restart
+      become: yes
+      become_user: gitlab-runner
+      environment:
+        HOME: "{{ GITLAB_DATA_DIR }}"
