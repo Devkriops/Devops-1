@@ -1,3 +1,18 @@
+- name: Playbook with Proxy
+  hosts: localhost
+  tasks:
+    - name: Configure Proxy for Playbook
+      shell: |
+        export HTTP_PROXY=http://proxy-server.example.com:8080
+        export HTTPS_PROXY=http://proxy-server.example.com:8080
+        export HTTP_PROXY_USERNAME=username
+        export HTTP_PROXY_PASSWORD=password
+      environment:
+        HTTP_PROXY: http://proxy-server.example.com:8080
+        HTTPS_PROXY: http://proxy-server.example.com:8080
+        HTTP_PROXY_USERNAME: username
+        HTTP_PROXY_PASSWORD: password
+
 ---
 - name: Install and Configure GitLab Runner
   hosts: your_target_hosts
