@@ -1,0 +1,34 @@
+---
+- name: Install Miniconda on Linux
+  hosts: your_target_host  # Replace with the target host or group of hosts where you want to install Miniconda
+  become: yes             # Use sudo privileges to install
+
+  tasks:
+    - name: Download Miniconda installer
+      get_url:
+        url: https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh  # Change URL if using Python 2 or a different version
+        dest: /tmp/miniconda_installer.sh
+
+    - name: Run Miniconda installer
+      command: bash /tmp/miniconda_installer.sh -b -p /opt/miniconda3  # Change -p to specify a different installation path if needed
+      async: 1800
+      poll: 0
+      ignore_errors: yes
+      register: miniconda_install_result
+
+    - name: Add Miniconda to PATH
+      shell: echo 'export PATH="/opt/miniconda3/bin:$PATH"' >> ~/.bashrc  # Update shell configuration file as needed
+      when: miniconda_install_result|success
+
+    - name: Source .bashrc
+      shell: source ~/.bashrc
+      when: miniconda_install_result|success
+
+    - name: Verify Miniconda installation
+      command: conda --version
+      register: conda_version_output
+      ignore_errors: yes
+
+    - name: Display Miniconda version
+      debug:
+        var: conda_version_output.stdout_lines
