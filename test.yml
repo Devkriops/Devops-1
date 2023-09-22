@@ -185,3 +185,20 @@
       shell: pm2 start server.js
       args:
         chdir: /path/to/destination  # Specify the same destination directory as above
+
+
+wget https://downloads.apache.org/maven/maven-3/3.8.4/binaries/apache-maven-3.8.4-bin.tar.gz
+sudo tar -xf apache-maven-3.8.4-bin.tar.gz -C /opt
+export M2_HOME=/opt/apache-maven-3.8.4  # Adjust the version number if necessary
+export M2=$M2_HOME/bin
+export PATH=$M2:$PATH
+source ~/.bashrc
+mvn -version
+
+wget https://downloads.apache.org/ant/binaries/apache-ant-X.Y.Z-bin.tar.gz
+sudo mkdir -p /opt/ant
+sudo tar -xzvf apache-ant-X.Y.Z-bin.tar.gz -C /opt/ant --strip-components=1
+export ANT_HOME="/opt/ant"
+export PATH="$ANT_HOME/bin:$PATH"
+source ~/.bashrc
+ant -version
