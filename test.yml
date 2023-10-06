@@ -217,11 +217,9 @@ export ANT_HOME="/opt/ant"
 export PATH="$ANT_HOME/bin:$PATH"
 source ~/.bashrc
 ant -version
+# Set environment variables to avoid interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
 
-RUN yum install -y firefox
-# Download geckodriver and copy it to /usr/local/bin/
-RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.30.0/geckodriver-v0.30.0-linux64.tar.gz -O /tmp/geckodriver.tar.gz \
-    && tar -xzvf /tmp/geckodriver.tar.gz -C /tmp \
-    && mv /tmp/geckodriver /usr/local/bin/geckodriver \
-    && chmod +x /usr/local/bin/geckodriver \
-    && rm /tmp/geckodriver.tar.gz
+# Update package lists and install dependencies
+RUN apt-get update && apt-get install -y firefox-geckodriver
+
