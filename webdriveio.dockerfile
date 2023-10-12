@@ -19,6 +19,14 @@ RUN apt-get update -y && apt-get upgrade -y && apt-get install -y --fix-missing 
 RUN curl -sL https://deb.nodesource.com/setup_16.x | bash -
 RUN apt-get install -y nodejs
 
+
+#fireofx
+
+# Manually download Firefox
+RUN curl -o /tmp/firefox.tar.bz2 "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64"
+RUN tar -xvjf /tmp/firefox.tar.bz2 -C /opt/
+RUN ln -s /opt/firefox/firefox /usr/bin/firefox
+
 # Install Google Chrome
 RUN echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list
 RUN curl -sL https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
