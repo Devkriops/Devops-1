@@ -55,3 +55,12 @@ RUN npx wdio config -y
 
 # Copy over the pre-configured wdio.conf.js
 COPY wdio.conf.js /tmp/webdriverio-test/wdio.conf.js
+
+wget https://download-installer.cdn.mozilla.net/pub/firefox/releases/latest/linux-x86_64/en-US/firefox-XX.X.X.zip
+sudo apt-get update
+sudo apt-get install unzip
+sudo yum install unzip
+unzip firefox-XX.X.X.zip
+sudo mv firefox /opt/
+sudo ln -s /opt/firefox/firefox /usr/local/bin/firefox
+
