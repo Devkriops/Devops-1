@@ -1,66 +1,40 @@
-# Use a more recent base image
-FROM debian:stretch
+# Use the official Ubuntu as a base image
+FROM ubuntu
 
-# Update the maintainer label
-LABEL MAINTAINER="krishna"
+# Set non-interactive mode for package installations
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Set proxy environment variables
-ARG http_proxy=http://proxy.ebiz.verizon.com:80
-ARG https_proxy=http://proxy.ebiz.verizon.com:80
-ARG no_proxy=.verizon.com
+# Update the package repositories and install required packages
+RUN apt-get update && apt-get install -y \
+    firefox \
+    unzip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Update the system and install necessary packages
-RUN apt-get update -y && apt-get upgrade -y && apt-get install -y --fix-missing \
-    build-essential \
-    apt-transport-https \
-    curl
+# Download and install GeckoDriver
+RUN apt-get update && apt-get install -y wget && \
+    wget -O geckodriver-v0.29.1-linux64.tar.gz https://github.com/mozilla/geckodriver/releases/download/v0.29.1/geckodriver-v0.29.1-linux64.tar.gz && \
+    tar -xzf geckodriver-v0.29.1-linux64.tar.gz -C /usr/local/bin/ && \
+    rm geckodriver-v0.29.1-linux64.tar.gz && \
+    chmod +x /usr/local/bin/geckodriver && \
+    apt-get remove -y wget && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install Node.js
-RUN curl -sL https://deb.nodesource.com/setup_16.x | bash -
-RUN apt-get install -y nodejs
+# Install Node.js and npm
+RUN apt-get update && apt-get install -y \
+    curl \
+    && curl -sL https://deb.nodesource.com/setup_14.x | bash - && \
+    apt-get install -y nodejs && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# Create a directory for your project
+WORKDIR /app
 
-#fireofx
+# Copy your WebDriverIO configuration and test files into the container
+COPY wdio.conf.js .
+COPY your_test_files_directory /app/your_test_files_directory
 
-# Manually download Firefox
-RUN curl -o /tmp/firefox.tar.bz2 "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64"
-RUN tar -xvjf /tmp/firefox.tar.bz2 -C /opt/
-RUN ln -s /opt/firefox/firefox /usr/bin/firefox
+# Install WebDriverIO and its dependencies
+RUN npm install webdriverio
 
-# Install Google Chrome
-RUN echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list
-RUN curl -sL https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
-RUN apt-get update -y && apt-get install -y google-chrome-stable --allow-unauthenticated --fix-missing
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Create a non-root user
-RUN useradd -ms /bin/bash node
-USER node
-
-# Create a directory for WebdriverIO tests
-RUN mkdir /tmp/webdriverio-test
-WORKDIR /tmp/webdriverio-test
-
-# Configure npm to use the proxy
-RUN npm config set https-proxy http://proxy.ebiz.verizon.com:80
-RUN npm config set http-proxy http://proxy.ebiz.verizon.com
-
-# Install WebdriverIO CLI and dependencies
-RUN npm install --save-dev @wdio/cli
-RUN npm install --save-dev @wdio/sync
-RUN npm install chromedriver --save-dev
-
-# Generate a WebdriverIO configuration file
-RUN npx wdio config -y
-
-# Copy over the pre-configured wdio.conf.js
-COPY wdio.conf.js /tmp/webdriverio-test/wdio.conf.js
-
-wget https://download-installer.cdn.mozilla.net/pub/firefox/releases/latest/linux-x86_64/en-US/firefox-XX.X.X.zip
-sudo apt-get update
-sudo apt-get install unzip
-sudo yum install unzip
-unzip firefox-XX.X.X.zip
-sudo mv firefox /opt/
-sudo ln -s /opt/firefox/firefox /usr/local/bin/firefox
-
+# Set the entry point for your Docker container
+CMD ["npx", "wdio", "--bail", "1", "wdio.conf.js"]
