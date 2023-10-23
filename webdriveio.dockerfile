@@ -1,40 +1,49 @@
-# Use the official Ubuntu as a base image
-FROM ubuntu
+# Use the base image
+FROM ubuntu:20.04
 
-# Set non-interactive mode for package installations
-ENV DEBIAN_FRONTEND=noninteractive
+# Set proxy environment variables if needed
 
-# Update the package repositories and install required packages
+
+# Set non-interactive frontend
+ARG DEBIAN_FRONTEND=noninteractive
+
+# Set timezone to EST
+ENV TZ=EST
+
+# Update package lists and install required packages
 RUN apt-get update && apt-get install -y \
-    firefox \
-    unzip \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-# Download and install GeckoDriver
-RUN apt-get update && apt-get install -y wget && \
-    wget -O geckodriver-v0.29.1-linux64.tar.gz https://github.com/mozilla/geckodriver/releases/download/v0.29.1/geckodriver-v0.29.1-linux64.tar.gz && \
-    tar -xzf geckodriver-v0.29.1-linux64.tar.gz -C /usr/local/bin/ && \
-    rm geckodriver-v0.29.1-linux64.tar.gz && \
-    chmod +x /usr/local/bin/geckodriver && \
-    apt-get remove -y wget && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Install Node.js and npm
-RUN apt-get update && apt-get install -y \
+    nodejs \
+    npm \
     curl \
-    && curl -sL https://deb.nodesource.com/setup_14.x | bash - && \
-    apt-get install -y nodejs && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+    apt-utils \
+    apt-transport-https \
+    software-properties-common \
+    g++ \
+    vim \
+    build-essential
+
+# Install Node.js 16.x
+RUN curl -sL https://deb.nodesource.com/setup_16.x | bash -
+RUN apt-get install -y nodejs
+
+# Install Google Chrome
+RUN curl -fsSL https://dl-ssl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-chrome-archive-keyring.gpg
+RUN echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome-archive-keyring.gpg] https://dl.google.com/linux/chrome/deb/ stable main" | tee /etc/apt/sources.list.d/google-chrome.list
+RUN apt-get update && apt-get -y install --no-install-recommends google-chrome-stable && apt-get clean && rm -rf /var/lib/apt/lists/* && rm -rf /etc/apt/sources.list.d/google-chrome.list
+
+# Create a user and switch to it
+RUN useradd -ms /bin/bash node
+USER node
 
 # Create a directory for your project
-WORKDIR /app
+RUN mkdir /tmp/webdriverio-test
+WORKDIR /tmp/webdriverio-test
 
-# Copy your WebDriverIO configuration and test files into the container
-COPY wdio.conf.js .
-COPY your_test_files_directory /app/your_test_files_directory
+# Set npm registry and initialize the project
+RUN npm config set https-proxy http://proxy.ebiz.verizon.com:80 && \
+    npm config set http-proxy http://proxy.ebiz.verizon.com:80 && \
+    npm config set registry http://registry.npmjs.org/
+RUN npm init -y
 
-# Install WebDriverIO and its dependencies
-RUN npm install webdriverio
-
-# Set the entry point for your Docker container
-CMD ["npx", "wdio", "--bail", "1", "wdio.conf.js"]
+# Install WebdriverIO CLI and any other dependencies
+RUN npm install --save-dev @wdio/cli @wdio/sync
