@@ -17,5 +17,5 @@ echo "Zero Value: $zero_value"
 # Specify the path to your HTML file
 html_file="your_file.html"
 
-# Use awk to extract values associated with "risk-3" and "High"
-awk -F'</?div>' '/<td class="risk-3">/{getline; risk=$2} /<td align="center">/{getline; print "Risk Level: " risk ", Value: " $2}' "$html_file"
+# Use awk to extract value associated with "risk-3" and "High"
+awk -F'</?div>' '/<td class="risk-3">/{getline; risk_value=$2; found_risk=1} /<td align="center">/{if(found_risk) {getline; center_value=$2; print "Risk-3 Value: " center_value; exit}}' "$html_file"
