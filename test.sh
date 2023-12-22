@@ -37,35 +37,35 @@ html_file="your_file.html"
 # Use awk to extract value associated with "risk-3" and "High"
 awk -F'</?div>' '/<td class="risk-3">/{getline; risk_value=$2; found_risk=1} /<td align="center">/{if(found_risk) {getline; center_value=$2; print "Risk-3 Value: " center_value; exit}}' "$html_file"
 ------------------------------------
-FROM registry.redhat.io/ubi8/ubi-minimal:8.4
+FROM registry.redhat.io/ubi8/ubi:8.4
 
 # Install required packages
-RUN microdnf install -y openssh-server openssh-clients openssl
+RUN dnf install -y openssh-server openssh-clients openssl curl
 
-# Download and install OpenSSH 8.1
-ADD https://openbsd.cs.toronto.edu/pub/OpenBSD/OpenSSH/portable/openssh-8.1p1.tar.gz /tmp
+# Download and install OpenSSH 8.2p1 from OpenBSD mirror
+ADD https://ftp.usa.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-8.2p1.tar.gz /tmp
 WORKDIR /tmp
-RUN tar -xzvf openssh-8.1p1.tar.gz && \
-    cd openssh-8.1p1 && \
+RUN tar -xzvf openssh-8.2p1.tar.gz && \
+    cd openssh-8.2p1 && \
     ./configure && \
     make && \
     make install && \
     cd /tmp && \
-    rm -rf openssh-8.1p1 openssh-8.1p1.tar.gz
+    rm -rf openssh-8.2p1 openssh-8.2p1.tar.gz
 
-# Download and install OpenSSL 3.0.7
-ADD https://www.openssl.org/source/openssl-3.0.7.tar.gz /tmp
+# Download and install OpenSSL 1.1.1 from OpenSSL mirror
+ADD https://www.openssl.org/source/openssl-1.1.1.tar.gz /tmp
 WORKDIR /tmp
-RUN tar -xzvf openssl-3.0.7.tar.gz && \
-    cd openssl-3.0.7 && \
+RUN tar -xzvf openssl-1.1.1.tar.gz && \
+    cd openssl-1.1.1 && \
     ./config && \
     make && \
     make install && \
     cd /tmp && \
-    rm -rf openssl-3.0.7 openssl-3.0.7.tar.gz
+    rm -rf openssl-1.1.1 openssl-1.1.1.tar.gz
 
 # Cleanup
-RUN microdnf clean all
+RUN dnf clean all
 
 # Configure SSH
 RUN mkdir /var/run/sshd
