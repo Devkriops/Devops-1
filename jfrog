@@ -1,1 +1,27 @@
 
+# Use the Red Hat Universal Base Image (UBI) as the base image
+FROM registry.access.redhat.com/ubi8/ubi
+
+# Install necessary packages
+RUN yum install -y \
+    ca-certificates \
+    yum-utils \
+    gnupg2 \
+    wget \
+    && yum clean all \
+    && rm -rf /var/cache/yum
+
+# Add JFrog CLI repository
+RUN echo "[jfrog-cli]" > /etc/yum.repos.d/jfrog-cli.repo \
+    && echo "name=jfrog-cli" >> /etc/yum.repos.d/jfrog-cli.repo \
+    && echo "baseurl=https://releases.jfrog.io/artifactory/jfrog-rpms" >> /etc/yum.repos.d/jfrog-cli.repo \
+    && echo "enabled=1" >> /etc/yum.repos.d/jfrog-cli.repo
+
+# Import JFrog GPG key
+RUN rpm --import https://releases.jfrog.io/artifactory/jfrog-gpg-public/jfrog_public_gpg.key
+
+# Install JFrog CLI
+RUN yum install -y jfrog-cli-v2-jf
+
+# Set the entry point to JFrog CLI
+ENTRYPOINT ["jfrog"]
