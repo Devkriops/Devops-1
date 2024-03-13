@@ -25,3 +25,24 @@ RUN yum install -y jfrog-cli-v2-jf
 
 # Set the entry point to JFrog CLI
 ENTRYPOINT ["jfrog"]
+
+
+
+#!/usr/bin/expect -f
+
+# Hardcoded parameters
+set server_id ""
+set platform_url ""
+set username ""
+set password ""
+
+# Spawn jfrog cli command
+spawn jf c addi $server_id --url $platform_url --user $username --password $password
+
+# Expect for prompts and send responses
+expect "Save and continue" { send "\r" }
+expect "y/N" { send "Y\r" }
+
+# Wait for the command to complete
+expect eof
+
