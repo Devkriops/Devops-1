@@ -28,21 +28,23 @@ ENTRYPOINT ["jfrog"]
 
 
 
-#!/usr/bin/expect -f
+#!/bin/bash
 
-# Hardcoded parameters
-set server_id ""
-set platform_url ""
-set username ""
-set password ""
+# Assign parameters to variables
+server_id="$SERVER_ID"
+url="$URL"
+user="$USER"
+password="$PASSWORD"
+interactive="$INTERACTIVE"
 
-# Spawn jfrog cli command
-spawn jf c addi $server_id --url $platform_url --user $username --password $password
+# Check if any parameter is empty
+if [ -z "$server_id" ] || [ -z "$url" ] || [ -z "$user" ] || [ -z "$password" ] || [ -z "$interactive" ]; then
+    echo "All parameters must be provided."
+    exit 1
+fi
 
-# Expect for prompts and send responses
-expect "Save and continue" { send "\r" }
-expect "y/N" { send "Y\r" }
+# Execute the command with the provided parameters
+jf c add "$server_id" --url="$url" --user="$user" --password="$password" --interactive="$interactive"
 
-# Wait for the command to complete
-expect eof
+docker run -e SERVER_ID="your_server_id" -e URL="your_url" -e USER="your_user" -e PASSWORD="your_password" -e INTERACTIVE="false" your_image_name
 
