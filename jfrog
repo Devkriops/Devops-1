@@ -43,8 +43,15 @@ if [ -z "$server_id" ] || [ -z "$url" ] || [ -z "$user" ] || [ -z "$password" ] 
     exit 1
 fi
 
+# Replace the password with a placeholder string
+masked_password="*****"
+
+# Echo the command with the provided parameters (with the password masked)
+echo "jf c add \"$server_id\" --url=\"$url\" --user=\"$user\" --password=\"$masked_password\" --interactive=\"$interactive\""
+
 # Execute the command with the provided parameters
 jf c add "$server_id" --url="$url" --user="$user" --password="$password" --interactive="$interactive"
+
 
 docker run -e SERVER_ID="your_server_id" -e URL="your_url" -e USER="your_user" -e PASSWORD="your_password" -e INTERACTIVE="false" your_image_name
 
