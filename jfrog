@@ -55,3 +55,15 @@ jf c add "$server_id" --url="$url" --user="$user" --password="$password" --inter
 
 docker run -e SERVER_ID="your_server_id" -e URL="your_url" -e USER="your_user" -e PASSWORD="your_password" -e INTERACTIVE="false" your_image_name
 
+
+#!/bin/bash
+
+# Set the URL variable
+url="https://www.google.com:8080/"
+
+# Extract domain using awk
+domain=$(echo "$url" | awk -F[/:] '{print $4}')
+
+# Print the extracted domain
+echo "$domain"
+
