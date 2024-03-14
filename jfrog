@@ -67,3 +67,22 @@ domain=$(echo "$url" | awk -F[/:] '{print $4}')
 # Print the extracted domain
 echo "$domain"
 
+
+
+# Path to your config file
+config_file="/path/to/your/config/file.conf"
+
+# Check if the config file exists
+if [ ! -f "$config_file" ]; then
+    echo "Config file does not exist: $config_file"
+    exit 1
+fi
+
+# Use sed to replace values in the config file
+sed -i "s/^zap.target=.*/zap.target=$target/" "$config_file"
+sed -i "s/^zap.produrl=.*/zap.produrl=$produrl/" "$config_file"
+sed -i "s/^zap.vastid=.*/zap.vastid=$vastid/" "$config_file"
+sed -i "s|^zap.contextpath=.*|zap.contextpath=/apps/context/$vastid.context|" "$config_file"
+
+
+
