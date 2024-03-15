@@ -94,6 +94,16 @@ sed -i "s|^zap.contextpath=.*|zap.contextpath=/apps/context/$vastid.context|" "$
                         
                         // Pull the Docker image
                         sh "docker pull $DOCKER_REGISTRY/your-image:tag"  // Replace with your image and tag
+                    sh '''
+                    docker run \
+                        -e SERVER_ID="${params.SERVER_ID}" \
+                        -e URL="${params.URL}" \
+                        -e USER="${params.USER}" \
+                        -e PASSWORD="${params.PASSWORD}" \
+                        -e INTERACTIVE="${params.INTERACTIVE}" \
+                        your_image_name
+                    '''
+
                     }
                 }
             }
