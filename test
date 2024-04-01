@@ -5,7 +5,9 @@ jq -r '.[] | "<p>" + .vulnerabilitySummary.severity + ": " + .name + "</p>"' sca
 pandoc scan_report.html -o scan_report.pdf
 
 # Convert JSON to HTML
-jq -r '.ScaResults[].XrayResults[].vulnerabilities[] | "<p>Summary: \(.summary)</p><p>Severity: \(.severity)</p><p>Component ID: \(.component_id)</p>"' scan_report.json > scan_report.html
+# Convert JSON to CSV format
+jq -r '.ScaResults[].XrayResults[].vulnerabilities[] | [.summary, .severity, (.components | keys[]), (.components[].fixed_versions | join(", "))] | @csv' scan_report.json > scan_report.csv
+
 
 # Convert HTML to PDF using wkhtmltopdf
 wkhtmltopdf scan_report.html scan_report.pdf
