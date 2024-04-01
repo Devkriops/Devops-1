@@ -3,3 +3,10 @@ jq -r '.[] | "<p>" + .vulnerabilitySummary.severity + ": " + .name + "</p>"' sca
 
 # Convert HTML to PDF using Pandoc
 pandoc scan_report.html -o scan_report.pdf
+
+
+# Convert JSON to HTML
+jq -r '.[].vulnerabilities[] | "<p>" + .severity + ": " + .packageName + "</p>"' scan_report.json > scan_report.html
+
+# Convert HTML to PDF using wkhtmltopdf
+wkhtmltopdf scan_report.html scan_report.pdf
