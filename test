@@ -1,3 +1,5 @@
-echo "<!DOCTYPE html><html><head><title>User Information</title></head><body><h1>User Information</h1><ul>" > output.html
-jq -r '. | to_entries | .[] | "<li>\(.key): \(.value)</li>"' data.json >> output.html
-echo "</ul></body></html>" >> output.html
+# Convert JSON to HTML
+jq -r '.[] | "<p>" + .vulnerabilitySummary.severity + ": " + .name + "</p>"' scan_report.json > scan_report.html
+
+# Convert HTML to PDF using Pandoc
+pandoc scan_report.html -o scan_report.pdf
