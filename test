@@ -1,3 +1,22 @@
+-------------------------
+
+
+#!/bin/bash
+
+# Find the file in /tmp matching the pattern
+source_file=$(find /tmp -name 'jfrog.cli.temp.*')
+
+# Check if a file is found
+if [ -f "$source_file" ]; then
+    # Copy the file to /apps/binary
+    cp "$source_file" /apps/binary/
+    echo "File copied successfully to /apps/binary/"
+else
+    echo "File not found in /tmp directory."
+fi
+
+---------------------------------------------
+
 #!/bin/bash
 
 # Run jq command to generate HTML and count vulnerability severity
@@ -27,7 +46,7 @@ echo "</table></body></html>" >> temp.html
 # Rename temp.html to scan_report.html
 mv temp.html scan_report.html
 
-
+--------------------------------
 
 -----------------------------
 #!/bin/bash
