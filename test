@@ -1,18 +1,32 @@
-# Convert JSON to HTML
-jq -r '.[] | "<p>" + .vulnerabilitySummary.severity + ": " + .name + "</p>"' scan_report.json > scan_report.html
+#!/bin/bash
 
-# Convert HTML to PDF using Pandoc
-pandoc scan_report.html -o scan_report.pdf
+# Run jq command to generate HTML and count vulnerability severity
+jq_output=$(jq -r '.ScaResults[].XrayResults[].vulnerabilities[] | "<tr><td>\(.summary)</td><td>\(.severity)</td><td>\(.components)</td><td>\(.components[].fixed_versions)</td></tr>"' scan_report.json)
 
-# Convert JSON to HTML
-jq -r '.ScaResults[].XrayResults[].vulnerabilities[] | "<p>Summary: \(.summary)</p><p>Severity: \(.severity)</p><p>Components: \(.components)</p><p>Fixed Versions: \(.components[].fixed_versions)</p>"' scan_report.json > scan_report.html
-# Convert JSON to HTML
-jq -r '.ScaResults[].XrayResults[].vulnerabilities[] | "<div class=\"vulnerability\"><p><strong>Summary:</strong> \(.summary)</p><p><strong>Severity:</strong> \(.severity)</p><p><strong>Components:</strong> \(.components)</p><p><strong>Fixed Versions:</strong> \(.components[].fixed_versions)</p></div>"' scan_report.json > scan_report.html
-# Convert JSON to HTML
-jq -r '.ScaResults[].XrayResults[].vulnerabilities[] | "<tr><td><strong>Summary:</strong></td><td>\(.summary)</td></tr><tr><td><strong>Severity:</strong></td><td>\(.severity)</td></tr><tr><td><strong>Components:</strong></td><td>\(.components)</td></tr><tr><td><strong>Fixed Versions:</strong></td><td>\(.components[].fixed_versions)</td></tr>"' scan_report.json > scan_report.html
+# Count the total number of vulnerabilities
+total_count=$(echo "$jq_output" | wc -l)
 
-# Convert HTML to PDF using wkhtmltopdf
-wkhtmltopdf scan_report.html scan_report.pdf
+# Count the number of vulnerabilities for each severity level
+high_count=$(echo "$jq_output" | grep -c 'High')
+medium_count=$(echo "$jq_output" | grep -c 'Medium')
+low_count=$(echo "$jq_output" | grep -c 'Low')
+
+# Generate HTML header
+echo "<!DOCTYPE html><html><head><style>table { border-collapse: collapse; width: 100%; } th, td { border: 1px solid #dddddd; text-align: left; padding: 8px; } th { background-color: #f2f2f2; }</style></head><body><h1>Scan Report</h1><table><tr><th>Summary</th><th>Severity</th><th>Components</th><th>Fixed Version</th></tr>" > temp.html
+
+# Include HTML output within the HTML file
+echo "$jq_output" >> temp.html
+
+# Generate HTML footer with vulnerability counts
+echo "<tr><td colspan=\"4\"><strong>Total Vulnerabilities:</strong> $total_count</td></tr>" >> temp.html
+echo "<tr><td colspan=\"4\"><strong>High Severity:</strong> $high_count</td></tr>" >> temp.html
+echo "<tr><td colspan=\"4\"><strong>Medium Severity:</strong> $medium_count</td></tr>" >> temp.html
+echo "<tr><td colspan=\"4\"><strong>Low Severity:</strong> $low_count</td></tr>" >> temp.html
+echo "</table></body></html>" >> temp.html
+
+# Rename temp.html to scan_report.html
+mv temp.html scan_report.html
+
 
 
 -----------------------------
