@@ -13,3 +13,22 @@ jq -r '.ScaResults[].XrayResults[].vulnerabilities[] | "<tr><td><strong>Summary:
 
 # Convert HTML to PDF using wkhtmltopdf
 wkhtmltopdf scan_report.html scan_report.pdf
+
+
+-----------------------------
+#!/bin/bash
+
+# Run jq command to generate HTML
+jq -r '.ScaResults[].XrayResults[].vulnerabilities[] | "<tr><td><strong>Summary:</strong></td><td>\(.summary)</td></tr><tr><td><strong>Severity:</strong></td><td>\(.severity)</td></tr><tr><td><strong>Components:</strong></td><td>\(.components)</td></tr><tr><td><strong>Fixed Versions:</strong></td><td>\(.components[].fixed_versions)</td></tr>"' scan_report.json > scan_report.html
+
+# Generate HTML header
+echo "<!DOCTYPE html><html><head><style>table { border-collapse: collapse; width: 100%; } th, td { border: 1px solid #dddddd; text-align: left; padding: 8px; } th { background-color: #f2f2f2; }</style></head><body><h1>Scan Report</h1><table>" > temp.html
+
+# Include HTML output within the HTML file
+cat scan_report.html >> temp.html
+
+# Generate HTML footer
+echo "</table></body></html>" >> temp.html
+
+# Rename temp.html to scan_report.html
+mv temp.html scan_report.html
