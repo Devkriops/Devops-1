@@ -8,6 +8,8 @@ pandoc scan_report.html -o scan_report.pdf
 jq -r '.ScaResults[].XrayResults[].vulnerabilities[] | "<p>Summary: \(.summary)</p><p>Severity: \(.severity)</p><p>Components: \(.components)</p><p>Fixed Versions: \(.components[].fixed_versions)</p>"' scan_report.json > scan_report.html
 # Convert JSON to HTML
 jq -r '.ScaResults[].XrayResults[].vulnerabilities[] | "<div class=\"vulnerability\"><p><strong>Summary:</strong> \(.summary)</p><p><strong>Severity:</strong> \(.severity)</p><p><strong>Components:</strong> \(.components)</p><p><strong>Fixed Versions:</strong> \(.components[].fixed_versions)</p></div>"' scan_report.json > scan_report.html
+# Convert JSON to HTML
+jq -r '.ScaResults[].XrayResults[].vulnerabilities[] | "<tr><td><strong>Summary:</strong></td><td>\(.summary)</td></tr><tr><td><strong>Severity:</strong></td><td>\(.severity)</td></tr><tr><td><strong>Components:</strong></td><td>\(.components)</td></tr><tr><td><strong>Fixed Versions:</strong></td><td>\(.components[].fixed_versions)</td></tr>"' scan_report.json > scan_report.html
 
 # Convert HTML to PDF using wkhtmltopdf
 wkhtmltopdf scan_report.html scan_report.pdf
