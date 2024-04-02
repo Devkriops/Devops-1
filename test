@@ -51,17 +51,49 @@ mv temp.html scan_report.html
 -----------------------------
 #!/bin/bash
 
-# Run jq command to generate HTML
-jq -r '.ScaResults[].XrayResults[].vulnerabilities[] | "<tr><td>\(.summary)</td><td>\(.severity)</td><td>\(.components)</td><td>\(.components[].fixed_versions)</td></tr>"' scan_report.json > scan_report.html
+# Define the function
+generate_html_report() {
+    # Run jq command to generate HTML and count vulnerability severity
+    jq_output=$(jq -r '.ScaResults[].XrayResults[].vulnerabilities[] | "<tr><td>\(.summary)</td><td>\(.severity)</td><td>\(.components)</td><td>\(.components[].fixed_versions)</td></tr>"' scan_report.json)
 
-# Generate HTML header
-echo "<!DOCTYPE html><html><head><style>table { border-collapse: collapse; width: 100%; } th, td { border: 1px solid #dddddd; text-align: left; padding: 8px; } th { background-color: #f2f2f2; }</style></head><body><h1>Scan Report</h1><table><tr><th>Summary</th><th>Severity</th><th>Components</th><th>Fixed Version</th></tr>" > temp.html
+    # Count the total number of vulnerabilities
+    total_count=$(echo "$jq_output" | tail -n +2 | wc -l)
 
-# Include HTML output within the HTML file
-cat scan_report.html >> temp.html
+    # Count the number of vulnerabilities for each severity level
+    high_count=$(echo "$jq_output" | grep -c 'High')
+    medium_count=$(echo "$jq_output" | grep -c 'Medium')
+    low_count=$(echo "$jq_output" | grep -c 'Low')
+    critical_count=$(echo "$jq_output" | grep -c 'Critical')
 
-# Generate HTML footer
-echo "</table></body></html>" >> temp.html
+    # Generate HTML header
+    echo "<!DOCTYPE html><html><head><style>table { border-collapse: collapse; width: 100%; } th, td { border: 1px solid #dddddd; text-align: left; padding: 8px; } th { background-color: #f2f2f2; }</style></head><body><h1>Scan Report</h1><table><tr><th>Summary</th><th>Severity</th><th>Components</th><th>Fixed Version</th></tr>" > temp.html
 
-# Rename temp.html to scan_report.html
-mv temp.html scan_report.html
+    # Include HTML output within the HTML file
+    echo "$jq_output" >> temp.html
+
+    # Generate HTML footer with vulnerability counts
+    echo "<tr><td colspan=\"4\"><strong>Total Vulnerabilities:</strong> $total_count</td></tr>" >> temp.html
+    echo "<tr><td colspan=\"4\"><strong>High Severity:</strong> $high_count</td></tr>" >> temp.html
+    echo "<tr><td colspan=\"4\"><strong>Medium Severity:</strong> $medium_count</td></tr>" >> temp.html
+    echo "<tr><td colspan=\"4\"><strong>Low Severity:</strong> $low_count</td></tr>" >> temp.html
+    echo "<tr><td colspan=\"4\"><strong>Critical Severity:</strong> $critical_count</td></tr>" >> temp.html
+    echo "</table></body></html>" >> temp.html
+
+    # Rename temp.html to scan_report.html
+    mv temp.html scan_report.html
+}
+
+# Call the function
+generate_html_report
+
+# Find the file in /tmp matching the pattern
+source_file=$(find /tmp -name 'jfrog.cli.temp.*')
+
+# Check if a file is found
+if [ -f "$source_file" ]; then
+    # Copy the file to /apps/binary
+    cp "$source_file" /apps/binary/
+    echo "File copied successfully to /apps/binary/"
+else
+    echo "File not found in /tmp directory."
+fi
