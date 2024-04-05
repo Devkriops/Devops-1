@@ -1,75 +1,137 @@
-#!/bin/bash
+set -x
 
-# Specify the path to your HTML file
-html_file="your_file.html"
+#export porxy
+# export http_proxy=http://proxy.ebiz.verizon.com:80/
+# export https_proxy=http://proxy.ebiz.verizon.com:80/
+# export no_proxy=169.254.169.254,127.0.0.1,localhost,.verizon.com,.vzwcorp.com,.vzbi.com,.eks.amazonaws.c
 
-# Use awk to extract value associated with "risk-3" and "High"
-awk -F'</?div>' '/<td class="risk-3">/{getline; risk_value=$2; found_risk=1} /<td align="center">/{if(found_risk) {getline; center_value=$2; exit}} END {if (found_risk) print center_value}' "$html_file" | while read -r risk3_value; do
-    quality_gate="yes"  # Set this variable based on your criteria
-    
-    if [[ "$quality_gate" == "yes" ]]; then
-        if [[ "$risk3_value" == "0" ]]; then
-            echo "Quality Gate Parameter: Yes"
-            echo "Risk-3 Value: $risk3_value"
-            echo "Success"
-        else
-            echo "Quality Gate Parameter: Yes"
-            echo "Risk-3 Value: $risk3_value"
-            echo "Failed"
-            exit 1  # Exit the script with an error code
-        fi
-    elif [[ "$quality_gate" == "nothing" ]]; then
-        echo "Quality Gate Parameter: Nothing"
-        echo "Risk-3 Value: $risk3_value"
-    else
-        echo "Invalid quality gate parameter"
-        exit 1  # Exit the script with an error code
-    fi
-done
 
-------------------------------------
 
-#!/bin/bash
+echo "Exporting the proxy............................................................"
 
-# Specify the path to your HTML file
-html_file="your_file.html"
+export http_proxy=$httpproxy
+echo "$http_proxy"
+export https_proxy=$httpsproxy
+echo "$https_proxy"
+export no_proxy=$noproxy
+echo "$no_proxy"
 
-# Use awk to extract value associated with "risk-3" and "High"
-awk -F'</?div>' '/<td class="risk-3">/{getline; risk_value=$2; found_risk=1} /<td align="center">/{if(found_risk) {getline; center_value=$2; print "Risk-3 Value: " center_value; exit}}' "$html_file"
-------------------------------------
-FROM registry.redhat.io/ubi8/ubi:8.4
 
-# Install required packages
-RUN dnf install -y openssh-server openssh-clients openssl curl
+DIRECTORY="data"
 
-# Download and install OpenSSH 8.2p1 from OpenBSD mirror
-ADD https://ftp.usa.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-8.2p1.tar.gz /tmp
-WORKDIR /tmp
-RUN tar -xzvf openssh-8.2p1.tar.gz && \
-    cd openssh-8.2p1 && \
-    ./configure && \
-    make && \
-    make install && \
-    cd /tmp && \
-    rm -rf openssh-8.2p1 openssh-8.2p1.tar.gz
+echo "Running ...."
 
-# Download and install OpenSSL 1.1.1 from OpenSSL mirror
-ADD https://www.openssl.org/source/openssl-1.1.1.tar.gz /tmp
-WORKDIR /tmp
-RUN tar -xzvf openssl-1.1.1.tar.gz && \
-    cd openssl-1.1.1 && \
-    ./config && \
-    make && \
-    make install && \
-    cd /tmp && \
-    rm -rf openssl-1.1.1 openssl-1.1.1.tar.gz
+cd /apps/
 
-# Cleanup
-RUN dnf clean all
+# verify volume test-data is attached
+echo "looking for data volume ..."
+if [ -d "$DIRECTORY" ]
+then
+ # Verify all necessary files are included (*.context, *.js, zap.config)
+ printf "\t$DIRECTORY volume does exist \t \xE2\x9C\x94 \n"
+else
+ printf "\t$DIRECTORY does not exist\t \xE2\x9D\x8C"
+ exit
+fi
 
-# Configure SSH
-RUN mkdir /var/run/sshd
-RUN ssh-keygen -A
+if [ -e data/*.context ];
+then
+ printf "\tcontext does exist \t \xE2\x9C\x94 \n"
+else
+ printf "\tcontext file missing\t \xE2\x9D\x8C"
+ exit
+fi
 
-# Start SSH server
-CMD ["/usr/sbin/sshd", "-D"]
+if [ -e data/*.js ];
+then
+ printf "\tWDIO does exist \t \xE2\x9C\x94 \n"
+else
+ printf "\tWDIO script missing\t \xE2\x9D\x8C"
+exit
+fi
+
+if [ -e data/zap.config ];
+then
+  printf "\tzap.config does exist \t \xE2\x9C\x94 \n"
+  printf "Starting Zap .... \t \xE2\x9C\x94 \n"
+
+else
+  printf "\tzap.config is missing\t \xE2\x9D\x8C"
+  exit
+fi
+
+mkdir /apps/context
+
+cd /apps/data/
+contextfile=$(echo *.context)
+echo $contextfile
+cp /apps/data/$contextfile /apps/context/$contextfile
+
+loginscript=$(echo *.js)
+echo $loginscript
+cp /apps/data/$loginscript /tmp/webdriverio-test/test/specs/$loginscript
+
+cp /apps/data/zap.config /apps/zap.config
+
+mkdir /tmp/zap
+cd /apps/
+
+mkdir /apps/results/
+
+mkdir /apps/policies
+cp /apps/DefaultVZ.policy /apps/policies/
+
+mv /apps/ZAP_2.11.1 /apps/zap/
+
+chmod -R 755 /apps/
+
+#### START ZAP DAEMON
+/apps/zap/zap.sh -daemon -host 0.0.0.0 -Xmx2G -addonuninstall openapi -silent -port 8000 -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true -config api.key=12345 -config connection.timeoutInSecs=30 -dir /tmp/zap/ &
+sleep 15
+
+
+#npm install @wdio/cli@latest
+# install our browser drivers for wdio
+#npm i wdio-geckodriver-service --save-dev
+#npm i geckodriver --save-dev
+#npm i wdio-chromedriver-service --save-dev
+#npm i chromedriver --save-dev
+# Run the following as the node user.
+cd /tmp/webdriverio-test
+
+#npm config set https-proxy http://proxy.ebiz.verizon.com:80 && npm config set http-proxy http://proxy.ebegistry.npmjs.org/
+#npm init -y
+
+# Execute wdio.conf.js
+npx wdio --bail 1 --loglevel warn /tmp/webdriverio-test/wdio.conf.js
+
+
+cd /apps/
+#### INITIALIZE AND ATTACK TARGET SITE
+java -jar ./zapwrapper.jar initialize
+
+# Keep Session Alive.
+java -jar ./zapwrapper.jar session
+
+## Spider the specified URL under zap.target.
+java -jar ./zapwrapper.jar spider
+
+# Attack site based on site map.
+java -jar ./zapwrapper.jar attack
+
+# Get list of alerts/vulnerabilites.
+java -jar ./zapwrapper.jar alerts; alertSuccess=$?
+
+sleep 5
+
+echo "Moving Files To Results Directory ..."
+
+
+cp /apps/zap_results.json /apps/results/zap_results.json.dast
+mv /apps/zap_results.json /apps/results/zap_results.json
+mv /apps/zap_crawled_urls.txt /apps/results/zap_crawled_urls.txt
+mv /apps/all_zap_traffic.txt /apps/results/all_zap_traffic.txt
+mv /apps/zap_results.html /apps/results/zap_results.html
+mv /apps/zap_results.md /apps/results/zap_results.md
+mv /apps/zap_results.xml /apps/results/zap_results.xml
+cp /apps/results/* /apps/data/
