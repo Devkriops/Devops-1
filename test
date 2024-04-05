@@ -1,99 +1,133 @@
--------------------------
+FROM go0v-vzdocker.oneartifactoryprod.verizon.com/ubuntu:latest
 
 
-#!/bin/bash
+ENV http_proxy 'http://proxy.ebiz.verizon.com:80' 
+ENV https_proxy 'http://proxy.ebiz.verizon.com:80' 
+ENV no_proxy=.verizon.com,localhost
 
-# Find the file in /tmp matching the pattern
-source_file=$(find /tmp -name 'jfrog.cli.temp.*')
+ENV ZAPPORT = 8000
+ENV ZAPHOST = 0.0.0.0
+ENV JAVA_HOME = /usr/lib/jvm/java-11-openjdk-amd64/
 
-# Check if a file is found
-if [ -f "$source_file" ]; then
-    # Copy the file to /apps/binary
-    cp "$source_file" /apps/binary/
-    echo "File copied successfully to /apps/binary/"
-else
-    echo "File not found in /tmp directory."
-fi
+################################################################################3
+# Set non-interactive frontend
+ARG DEBIAN_FRONTEND=noninteractive
 
----------------------------------------------
+# Set timezone to EST
+ENV TZ=EST
 
-#!/bin/bash
+# Update package lists and install required packages
+RUN apt-get update && apt-get install -y \
+    nodejs \
+    npm \
+    curl \
+    apt-utils \
+    apt-transport-https \
+    software-properties-common \
+    g++ \
+    vim \
+    build-essential
 
-# Run jq command to generate HTML and count vulnerability severity
-jq_output=$(jq -r '.ScaResults[].XrayResults[].vulnerabilities[] | "<tr><td>\(.summary)</td><td>\(.severity)</td><td>\(.components)</td><td>\(.components[].fixed_versions)</td></tr>"' scan_report.json)
+# Install Node.js 16.x
+RUN curl -sL https://deb.nodesource.com/setup_16.x | bash -
+RUN apt-get install -y nodejs
 
-# Count the total number of vulnerabilities
-total_count=$(echo "$jq_output" | wc -l)
+# Install Google Chrome
+RUN curl -fsSL https://dl-ssl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-chrome-archive-keyring.gpg
+RUN echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome-archive-keyring.gpg] https://dl.google.com/linux/chrome/deb/ stable main" | tee /etc/apt/sources.list.d/google-chrome.list
+RUN apt-get update && apt-get -y install --no-install-recommends google-chrome-stable && apt-get clean && rm -rf /var/lib/apt/lists/* && rm -rf /etc/apt/sources.list.d/google-chrome.list
 
-# Count the number of vulnerabilities for each severity level
-high_count=$(echo "$jq_output" | grep -c 'High')
-medium_count=$(echo "$jq_output" | grep -c 'Medium')
-low_count=$(echo "$jq_output" | grep -c 'Low')
+######################################################################
+RUN apt-get update && \
+	apt-get --no-install-recommends install -y curl apt-utils apt-transport-https software-properties-common 
 
-# Generate HTML header
-echo "<!DOCTYPE html><html><head><style>table { border-collapse: collapse; width: 100%; } th, td { border: 1px solid #dddddd; text-align: left; padding: 8px; } th { background-color: #f2f2f2; }</style></head><body><h1>Scan Report</h1><table><tr><th>Summary</th><th>Severity</th><th>Components</th><th>Fixed Version</th></tr>" > temp.html
+ARG WDIO_CLI_VERSION=v8.8.8
 
-# Include HTML output within the HTML file
-echo "$jq_output" >> temp.html
+RUN add-apt-repository ppa:openjdk-r/ppa -y && \
+    apt-get update  && \ 
+    apt install -y --no-install-recommends \
+    g++ \
+    wget jq \
+    build-essential \
+    gnupg ca-certificates icu-devtools \
+    apt-transport-https \
+    openjdk-11-jdk && \
+    apt-get clean && \
+	rm -rf /var/lib/apt/lists/*-y
 
-# Generate HTML footer with vulnerability counts
-echo "<tr><td colspan=\"4\"><strong>Total Vulnerabilities:</strong> $total_count</td></tr>" >> temp.html
-echo "<tr><td colspan=\"4\"><strong>High Severity:</strong> $high_count</td></tr>" >> temp.html
-echo "<tr><td colspan=\"4\"><strong>Medium Severity:</strong> $medium_count</td></tr>" >> temp.html
-echo "<tr><td colspan=\"4\"><strong>Low Severity:</strong> $low_count</td></tr>" >> temp.html
-echo "</table></body></html>" >> temp.html
+RUN apt-get update && \
+    apt install -y --no-install-recommends vim && \
+    mkdir /apps && \
+    mkdir /apps/data
 
-# Rename temp.html to scan_report.html
-mv temp.html scan_report.html
 
---------------------------------
+# COPY ./test-data/26863.context /zap/context/26863.context
+# COPY ./test-data/zap.config /zap/zap.config
 
------------------------------
-#!/bin/bash
+COPY ZAP_2.11.1_Linux.tar.gz /apps/zap.tar.gz
+COPY zapDependencies.tar.gz /apps/zapDependencies.tar.gz
+COPY zapwrapper-2-10.jar /apps/zapwrapper.jar
 
-# Define the function
-generate_html_report() {
-    # Run jq command to generate HTML and count vulnerability severity
-    jq_output=$(jq -r '.ScaResults[].XrayResults[].vulnerabilities[] | "<tr><td>\(.summary)</td><td>\(.severity)</td><td>\(.components)</td><td>\(.components[].fixed_versions)</td></tr>"' scan_report.json)
 
-    # Count the total number of vulnerabilities
-    total_count=$(echo "$jq_output" | tail -n +2 | wc -l)
+RUN tar -xzvf /apps/zap.tar.gz -C /apps
+# && rm /zap/ZAP_2.11.1_Linux.tar.gz
+RUN tar -xzvf /apps/zapDependencies.tar.gz -C /apps
+# && rm /zap/zapDependencies.tar.gz
+RUN mv /apps/zapDependencies/* /apps/
 
-    # Count the number of vulnerabilities for each severity level
-    high_count=$(echo "$jq_output" | grep -c 'High')
-    medium_count=$(echo "$jq_output" | grep -c 'Medium')
-    low_count=$(echo "$jq_output" | grep -c 'Low')
-    critical_count=$(echo "$jq_output" | grep -c 'Critical')
+#COPY DefaultVZ.policy /zap/policies/DefaultVZ.policy
 
-    # Generate HTML header
-    echo "<!DOCTYPE html><html><head><style>table { border-collapse: collapse; width: 100%; } th, td { border: 1px solid #dddddd; text-align: left; padding: 8px; } th { background-color: #f2f2f2; }</style></head><body><h1>Scan Report</h1><table><tr><th>Summary</th><th>Severity</th><th>Components</th><th>Fixed Version</th></tr>" > temp.html
+#COPY sessioncookies.txt /zap/sessioncookies.txt
+#COPY shortattacklist.txt /zap/shortattacklist
 
-    # Include HTML output within the HTML file
-    echo "$jq_output" >> temp.html
+###########################################################################
+# Create a directory for your project
+RUN mkdir /tmp/webdriverio-test
+WORKDIR /tmp/webdriverio-test
 
-    # Generate HTML footer with vulnerability counts
-    echo "<tr><td colspan=\"4\"><strong>Total Vulnerabilities:</strong> $total_count</td></tr>" >> temp.html
-    echo "<tr><td colspan=\"4\"><strong>High Severity:</strong> $high_count</td></tr>" >> temp.html
-    echo "<tr><td colspan=\"4\"><strong>Medium Severity:</strong> $medium_count</td></tr>" >> temp.html
-    echo "<tr><td colspan=\"4\"><strong>Low Severity:</strong> $low_count</td></tr>" >> temp.html
-    echo "<tr><td colspan=\"4\"><strong>Critical Severity:</strong> $critical_count</td></tr>" >> temp.html
-    echo "</table></body></html>" >> temp.html
+# Set npm registry and initialize the project
+RUN npm config set https-proxy http://proxy.ebiz.verizon.com:80 && \
+    npm config set http-proxy http://proxy.ebiz.verizon.com:80 && \
+    npm config set registry http://registry.npmjs.org/
+RUN npm init -y
 
-    # Rename temp.html to scan_report.html
-    mv temp.html scan_report.html
-}
+# Install WebdriverIO CLI and any other dependencies
+RUN npm install --save-dev @wdio/cli @wdio/sync
+RUN npm i chromedriver --detect_chromedriver_version
 
-# Call the function
-generate_html_report
+# Generate Configuration File
+RUN npx wdio config -y
 
-# Find the file in /tmp matching the pattern
-source_file=$(find /tmp -name 'jfrog.cli.temp.*')
+# Copy over pre-configured wdio.conf.js
+COPY wdio.conf.js wdio.conf.js
+COPY wdio.conf.js /tmp/webdriverio-test/wdio.conf.js
+###########################################################################
 
-# Check if a file is found
-if [ -f "$source_file" ]; then
-    # Copy the file to /apps/binary
-    cp "$source_file" /apps/binary/
-    echo "File copied successfully to /apps/binary/"
-else
-    echo "File not found in /tmp directory."
-fi
+RUN npx wdio --bail 1 --loglevel error /tmp/webdriverio-test/wdio.conf.js
+###########################################################################
+
+WORKDIR /apps/
+
+COPY job.sh /apps/
+RUN chmod a+x job.sh
+
+COPY expect_login.sh /apps/
+RUN chmod a+x expect_login.sh
+
+############################################################################
+
+#unset Proxy
+ENV http_proxy=
+ENV https_proxy=
+ENV no_proxy=
+
+#Set ENV values
+ENV LANDING_PAD=$LANDING_PAD
+ENV http_proxy=$httpproxy
+ENV https_proxy=$httpsproxy
+ENV no_proxy=$noproxy
+ENV quality_gate=$quality_gate
+
+############################################################################
+CMD ["bash", "/apps/job.sh"]
+
