@@ -1,1 +1,13 @@
-1
+capabilities: [{
+        maxInstances: 1,
+        browserName: 'chrome',
+        'goog:chromeOptions': {
+            binary: '/path/to/your/chrome/binary',
+            args: [
+                // Add your Chrome command line arguments here
+                '--headless',
+                '--disable-gpu',
+                '--window-size=1920,1080'
+            ]
+        }
+    }],
