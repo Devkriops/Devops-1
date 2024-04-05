@@ -1,8 +1,11 @@
-capabilities: [{
+exports.config = {
+    // other configurations...
+
+    capabilities: [{
         maxInstances: 1,
         browserName: 'chrome',
         'goog:chromeOptions': {
-            binary: '/path/to/your/chrome/binary',
+            binaryPath: '/path/to/your/chrome/binary',
             args: [
                 // Add your Chrome command line arguments here
                 '--headless',
@@ -11,3 +14,6 @@ capabilities: [{
             ]
         }
     }],
+
+    // other configurations...
+};
