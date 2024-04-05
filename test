@@ -17,3 +17,12 @@ exports.config = {
 
     // other configurations...
 };
+
+
+#!/bin/bash
+
+# Start Google Chrome in headless mode
+google-chrome-stable --headless --disable-gpu --no-sandbox --remote-debugging-port=9222 --disable-dev-shm-usage --disable-setuid-sandbox
+
+# Optional: Add additional commands here
+
