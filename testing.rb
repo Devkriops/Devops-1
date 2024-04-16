@@ -28,13 +28,6 @@ RUN curl -sS -o - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-ke
     apt-get update && \
     apt-get install -y --no-install-recommends google-chrome-stable
 
-# Create a non-root user named 'node'
-RUN useradd -ms /bin/bash node
-
-# Set working directory and user
-WORKDIR /home/node
-USER node
-
 # Set npm configuration for proxy
 RUN npm config set https-proxy http://proxy.ebiz.verizon.com:80 && \
     npm config set http-proxy http://proxy.ebiz.verizon.com:80 && \
@@ -44,7 +37,7 @@ RUN npm config set https-proxy http://proxy.ebiz.verizon.com:80 && \
 RUN npm init -y
 
 # Install WebdriverIO CLI and necessary dependencies
-RUN npm install --save-dev @wdio/cli @wdio/sync chromedriver
+RUN npm install --global --unsafe-perm=true --allow-root @wdio/cli @wdio/sync chromedriver
 
 # Generate Configuration File
 RUN npx wdio config -y
