@@ -1,57 +1,59 @@
-#FROM go0v-vzdocker.oneartifactoryprod.verizon.com/artifactory/go0v-vzdocker/debian/stretch-20210408-slim
-FROM go0v-vzdocker.oneartifactoryprod.verizon.com/debian:stretch-20210408-slim
-LABEL MAINTAINER="Tim Raphael"
+# Use a base image from Debian stretch
+FROM debian:stretch
 
-ARG http_proxy=http://proxy.ebiz.verizon.com:80
-ARG https_proxy=http://proxy.ebiz.verizon.com:80
-ARG no_proxy=.verizon.com
+# Set metadata for the image
+LABEL MAINTAINER="Your Name"
 
-RUN apt-get update && apt-get upgrade -y && apt-get install -q -y --fix-missing \
+# Set environment variables for proxy
+ENV http_proxy=http://proxy.ebiz.verizon.com:80
+ENV https_proxy=http://proxy.ebiz.verizon.com:80
+ENV no_proxy=.verizon.com
+
+# Update packages and install necessary tools
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
     g++ \
     vim \
     build-essential \
     apt-transport-https \
     curl
-RUN curl -sL https://deb.nodesource.com/setup_15.x |  bash -
-RUN cat /etc/apt/sources.list.d/nodesource.list
-RUN apt-get install -y  nodejs npm
-# Install latest (currently 87 which matches ZAP webdriverlinux23.zap plugin)
-#RUN curl -sS -o - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add
-RUN echo "deb https://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list
-RUN apt-get update && apt-get install -q -y --allow-unauthenticated --fix-missing \
-    google-chrome-stable && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* 
 
-# Remove due to twistlock concerts of a private key.
-#RUN rm /usr/share/doc/libnet-ssleay-perl/examples/server_key.pem
+# Install Node.js and npm
+RUN curl -sL https://deb.nodesource.com/setup_15.x | bash - && \
+    apt-get install -y nodejs npm
 
-# Run the following as the node user.
+# Install Google Chrome stable version
+RUN curl -sS -o - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
+    echo "deb [arch=amd64] https://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends google-chrome-stable
+
+# Create a non-root user named 'node'
 RUN useradd -ms /bin/bash node
+
+# Set working directory and user
+WORKDIR /home/node
 USER node
 
-# Create a directory where all the node packages and test will be executed from.
-RUN mkdir /tmp/webdriverio-test
-WORKDIR /tmp/webdriverio-test
+# Set npm configuration for proxy
+RUN npm config set https-proxy http://proxy.ebiz.verizon.com:80 && \
+    npm config set http-proxy http://proxy.ebiz.verizon.com:80 && \
+    npm config set registry http://registry.npmjs.org/
 
-RUN npm config set https-proxy http://proxy.ebiz.verizon.com:80 && npm config set http-proxy http://proxy.ebiz.verizon.com:80 && npm config set registry http://registry.npmjs.org/
+# Initialize npm project
 RUN npm init -y
 
-# Install WebdriverIO CLI
-RUN npm i --save-dev @wdio/cli
-RUN npm i --save-dev @wdio/sync
-RUN npm i chromedriver --detect_chromedriver_version
+# Install WebdriverIO CLI and necessary dependencies
+RUN npm install --save-dev @wdio/cli @wdio/sync chromedriver
 
 # Generate Configuration File
 RUN npx wdio config -y
 
 # Copy over pre-configured wdio.conf.js
-COPY wdio.conf.js wdio.conf.js
+COPY wdio.conf.js .
 
-# Create Spec Dir
-RUN mkdir -p ./test/specs 
+# Create Spec Directory
+RUN mkdir -p ./test/specs
 
-# Twistlock issue.
-#RUN rm /tmp/webdriverio-test/node_modules/lazystream/secret
-
+# Set default command to start a shell
 CMD ["/bin/bash"]
