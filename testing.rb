@@ -1,5 +1,5 @@
-# Use a base image from Debian stretch
-FROM debian:stretch
+# Use a base image from Ubuntu
+FROM ubuntu:20.04
 
 # Set metadata for the image
 LABEL MAINTAINER="Your Name"
@@ -11,20 +11,24 @@ ENV no_proxy=.verizon.com
 
 # Update packages and install necessary tools
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     g++ \
     vim \
     build-essential \
     apt-transport-https \
-    curl
+    curl \
+    gnupg \
+    wget \
+    ca-certificates \
+    software-properties-common
 
 # Install Node.js and npm
 RUN curl -sL https://deb.nodesource.com/setup_15.x | bash - && \
     apt-get install -y nodejs npm
 
 # Install Google Chrome stable version
-RUN curl -sS -o - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
-    echo "deb [arch=amd64] https://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list && \
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
+    echo "deb [arch=amd64] https://dl.google.com/linux/chrome/deb/ stable main" | tee /etc/apt/sources.list.d/google-chrome.list && \
     apt-get update && \
     apt-get install -y --no-install-recommends google-chrome-stable
 
