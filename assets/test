@@ -1,3 +1,25 @@
+# Run the following as the node user.
+RUN useradd -ms /bin/bash node
+USER node
+
+# Create a directory where all the node packages and test will be executed from.
+RUN mkdir /tmp/webdriverio-test
+WORKDIR /tmp/webdriverio-test
+
+RUN npm config set https-proxy http://proxy.ebiz.verizon.com:80 && npm config set http-proxy http://proxy.ebiz.verizon.com:80 && npm config set registry http://registry.npmjs.org/
+RUN npm init -y
+
+# Install WebdriverIO CLI
+RUN npm i --save-dev @wdio/cli
+RUN npm i --save-dev @wdio/sync
+RUN npm i chromedriver --detect_chromedriver_version
+
+# Generate Configuration File
+RUN npx wdio config -y
+
+
+######################
+
 STEP 13/15: RUN npm init -y
 Wrote to /tmp/webdriverio-test/package.json:
 
