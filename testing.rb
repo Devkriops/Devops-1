@@ -54,3 +54,39 @@ RUN mkdir -p ./test/specs
 
 # Set default command to start a shell
 CMD ["/bin/bash"]
+##################################################
+
+# Use a base image from Ubuntu
+FROM ubuntu:20.04
+
+# Set metadata for the image
+LABEL MAINTAINER="Your Name"
+
+# Update packages and install necessary tools
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    curl \
+    gnupg \
+    wget \
+    apt-transport-https \
+    ca-certificates \
+    software-properties-common \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js and npm
+RUN curl -sL https://deb.nodesource.com/setup_14.x | bash - && \
+    apt-get update && \
+    apt-get install -y nodejs
+
+# Install Google Chrome stable version
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
+    echo "deb [arch=amd64] https://dl.google.com/linux/chrome/deb/ stable main" | tee /etc/apt/sources.list.d/google-chrome.list && \
+    apt-get update && \
+    apt-get install -y google-chrome-stable
+
+# Install WebdriverIO CLI and necessary dependencies
+RUN npm install -g @wdio/cli @wdio/sync chromedriver
+
+# Set default command to start a shell
+CMD ["/bin/bash"]
+
