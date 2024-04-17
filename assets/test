@@ -1,1 +1,112 @@
 
+STEP 8/9: RUN npm install -g @wdio/cli @wdio/sync chromedriver
+/usr/bin/wdio -> /usr/lib/node_modules/@wdio/cli/bin/wdio.js
+/usr/bin/chromedriver -> /usr/lib/node_modules/chromedriver/bin/chromedriver
+
+> edgedriver@5.3.10 install /usr/lib/node_modules/@wdio/cli/node_modules/edgedriver
+> test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!"
+
+
+> fibers@5.0.3 install /usr/lib/node_modules/@wdio/sync/node_modules/fibers
+> node build.js || nodejs build.js
+
+`linux-x64-83-glibc` exists; testing
+Binary is fine; exiting
+
+> chromedriver@123.0.3 install /usr/lib/node_modules/chromedriver
+> node install.js
+
+Saving to file: /tmp/123.0.6312.105/chromedriver/chromedriver-linux64.zip
+Current existing ChromeDriver binary is unavailable, proceeding with download and extraction.
+Downloading from file:  https://storage.googleapis.com/chrome-for-testing-public/123.0.6312.105/linux64/chromedriver-linux64.zip
+Received 1040K...
+Received 2080K...
+Received 3120K...
+Received 4160K...
+Received 5200K...
+Received 6240K...
+Received 7280K...
+Received 8320K...
+Received 8434K total.
+Extracting zip contents to /tmp/123.0.6312.105/chromedriver.
+Copying from /tmp/123.0.6312.105/chromedriver/chromedriver-linux64 to target path /usr/lib/node_modules/chromedriver/lib/chromedriver
+ChromeDriver installation failed Error: EACCES: permission denied, mkdir '/usr/lib/node_modules/chromedriver/lib/chromedriver'
+    at Object.mkdirSync (fs.js:1014:3)
+    at Installer.copyIntoPlace (/usr/lib/node_modules/chromedriver/install.js:391:8)
+    at Installer.install (/usr/lib/node_modules/chromedriver/install.js:76:18) {
+  errno: -13,
+  syscall: 'mkdir',
+  code: 'EACCES',
+  path: '/usr/lib/node_modules/chromedriver/lib/chromedriver'
+}
+npm WARN notsup Unsupported engine for chromedriver@123.0.3: wanted: {"node":">=18"} (current: {"node":"14.21.3","npm":"6.14.18"})
+npm WARN notsup Not compatible with your version of node/npm: chromedriver@123.0.3
+npm WARN notsup Unsupported engine for @wdio/cli@8.36.0: wanted: {"node":"^16.13 || >=18"} (current: {"node":"14.21.3","npm":"6.14.18"})
+npm WARN notsup Not compatible with your version of node/npm: @wdio/cli@8.36.0
+npm WARN notsup Unsupported engine for @wdio/logger@8.28.0: wanted: {"node":"^16.13 || >=18"} (current: {"node":"14.21.3","npm":"6.14.18"})
+npm WARN notsup Not compatible with your version of node/npm: @wdio/logger@8.28.0
+npm WARN notsup Unsupported engine for @wdio/utils@8.36.0: wanted: {"node":"^16.13 || >=18"} (current: {"node":"14.21.3","npm":"6.14.18"})
+npm WARN notsup Not compatible with your version of node/npm: @wdio/utils@8.36.0
+npm WARN notsup Unsupported engine for @wdio/globals@8.36.0: wanted: {"node":"^16.13 || >=18"} (current: {"node":"14.21.3","npm":"6.14.18"})
+npm WARN notsup Not compatible with your version of node/npm: @wdio/globals@8.36.0
+npm WARN notsup Unsupported engine for @wdio/config@8.36.0: wanted: {"node":"^16.13 || >=18"} (current: {"node":"14.21.3","npm":"6.14.18"})
+npm WARN notsup Not compatible with your version of node/npm: @wdio/config@8.36.0
+npm WARN notsup Unsupported engine for execa@8.0.1: wanted: {"node":">=16.17"} (current: {"node":"14.21.3","npm":"6.14.18"})
+npm WARN notsup Not compatible with your version of node/npm: execa@8.0.1
+npm WARN notsup Unsupported engine for @wdio/types@8.36.0: wanted: {"node":"^16.13 || >=18"} (current: {"node":"14.21.3","npm":"6.14.18"})
+npm WARN notsup Not compatible with your version of node/npm: @wdio/types@8.36.0
+npm WARN notsup Unsupported engine for read-pkg-up@10.0.0: wanted: {"node":">=16"} (current: {"node":"14.21.3","npm":"6.14.18"})
+npm WARN notsup Not compatible with your version of node/npm: read-pkg-up@10.0.0
+npm WARN notsup Unsupported engine for webdriverio@8.36.0: wanted: {"node":"^16.13 || >=18"} (current: {"node":"14.21.3","npm":"6.14.18"})
+npm WARN notsup Not compatible with your version of node/npm: webdriverio@8.36.0
+npm WARN notsup Unsupported engine for deepmerge-ts@5.1.0: wanted: {"node":">=16.0.0"} (current: {"node":"14.21.3","npm":"6.14.18"})
+npm WARN notsup Not compatible with your version of node/npm: deepmerge-ts@5.1.0
+npm WARN notsup Unsupported engine for get-port@7.1.0: wanted: {"node":">=16"} (current: {"node":"14.21.3","npm":"6.14.18"})
+npm WARN notsup Not compatible with your version of node/npm: get-port@7.1.0
+npm WARN notsup Unsupported engine for geckodriver@4.3.3: wanted: {"node":"^16.13 || >=18 || >=20"} (current: {"node":"14.21.3","npm":"6.14.18"})
+npm WARN notsup Not compatible with your version of node/npm: geckodriver@4.3.3
+npm WARN notsup Unsupported engine for @puppeteer/browsers@1.9.1: wanted: {"node":">=16.3.0"} (current: {"node":"14.21.3","npm":"6.14.18"})
+npm WARN notsup Not compatible with your version of node/npm: @puppeteer/browsers@1.9.1
+npm WARN notsup Unsupported engine for which@4.0.0: wanted: {"node":"^16.13.0 || >=18.0.0"} (current: {"node":"14.21.3","npm":"6.14.18"})
+npm WARN notsup Not compatible with your version of node/npm: which@4.0.0
+npm WARN notsup Unsupported engine for isexe@3.1.1: wanted: {"node":">=16"} (current: {"node":"14.21.3","npm":"6.14.18"})
+npm WARN notsup Not compatible with your version of node/npm: isexe@3.1.1
+npm WARN notsup Unsupported engine for expect-webdriverio@4.13.0: wanted: {"node":">=16 || >=18 || >=20"} (current: {"node":"14.21.3","npm":"6.14.18"})
+npm WARN notsup Not compatible with your version of node/npm: expect-webdriverio@4.13.0
+npm WARN notsup Unsupported engine for @wdio/repl@8.24.12: wanted: {"node":"^16.13 || >=18"} (current: {"node":"14.21.3","npm":"6.14.18"})
+npm WARN notsup Not compatible with your version of node/npm: @wdio/repl@8.24.12
+npm WARN notsup Unsupported engine for webdriver@8.36.0: wanted: {"node":"^16.13 || >=18"} (current: {"node":"14.21.3","npm":"6.14.18"})
+npm WARN notsup Not compatible with your version of node/npm: webdriver@8.36.0
+npm WARN notsup Unsupported engine for puppeteer-core@20.9.0: wanted: {"node":">=16.3.0"} (current: {"node":"14.21.3","npm":"6.14.18"})
+npm WARN notsup Not compatible with your version of node/npm: puppeteer-core@20.9.0
+npm WARN notsup Unsupported engine for @puppeteer/browsers@1.4.6: wanted: {"node":">=16.3.0"} (current: {"node":"14.21.3","npm":"6.14.18"})
+npm WARN notsup Not compatible with your version of node/npm: @puppeteer/browsers@1.4.6
+npm WARN optional SKIPPING OPTIONAL DEPENDENCY: fsevents@~2.3.2 (node_modules/@wdio/cli/node_modules/chokidar/node_modules/fsevents):
+npm WARN notsup SKIPPING OPTIONAL DEPENDENCY: Unsupported platform for fsevents@2.3.3: wanted {"os":"darwin","arch":"any"} (current: {"os":"linux","arch":"x64"})
+npm WARN notsup Unsupported engine for get-stream@8.0.1: wanted: {"node":">=16"} (current: {"node":"14.21.3","npm":"6.14.18"})
+npm WARN notsup Not compatible with your version of node/npm: get-stream@8.0.1
+npm WARN notsup Unsupported engine for human-signals@5.0.0: wanted: {"node":">=16.17.0"} (current: {"node":"14.21.3","npm":"6.14.18"})
+npm WARN notsup Not compatible with your version of node/npm: human-signals@5.0.0
+npm WARN notsup Unsupported engine for read-pkg@8.1.0: wanted: {"node":">=16"} (current: {"node":"14.21.3","npm":"6.14.18"})
+npm WARN notsup Not compatible with your version of node/npm: read-pkg@8.1.0
+npm WARN notsup Unsupported engine for type-fest@4.15.0: wanted: {"node":">=16"} (current: {"node":"14.21.3","npm":"6.14.18"})
+npm WARN notsup Not compatible with your version of node/npm: type-fest@4.15.0
+npm WARN notsup Unsupported engine for parse-json@7.1.1: wanted: {"node":">=16"} (current: {"node":"14.21.3","npm":"6.14.18"})
+npm WARN notsup Not compatible with your version of node/npm: parse-json@7.1.1
+npm WARN notsup Unsupported engine for normalize-package-data@6.0.0: wanted: {"node":"^16.14.0 || >=18.0.0"} (current: {"node":"14.21.3","npm":"6.14.18"})
+npm WARN notsup Not compatible with your version of node/npm: normalize-package-data@6.0.0
+npm WARN notsup Unsupported engine for hosted-git-info@7.0.1: wanted: {"node":"^16.14.0 || >=18.0.0"} (current: {"node":"14.21.3","npm":"6.14.18"})
+npm WARN notsup Not compatible with your version of node/npm: hosted-git-info@7.0.1
+npm WARN @promptbook/utils@0.44.0-1 requires a peer of @promptbook/core@0.44.0-1 but none is installed. You must install peer dependencies yourself.
+
+npm ERR! code ELIFECYCLE
+npm ERR! errno 1
+npm ERR! chromedriver@123.0.3 install: `node install.js`
+npm ERR! Exit status 1
+npm ERR! 
+npm ERR! Failed at the chromedriver@123.0.3 install script.
+npm ERR! This is probably not a problem with npm. There is likely additional logging output above.
+
+npm ERR! A complete log of this run can be found in:
+npm ERR!     /root/.npm/_logs/2024-04-17T17_54_50_475Z-debug.log
+Error: building at STEP "RUN npm install -g @wdio/cli @wdio/sync chromedriver": while running runtime: exit status 1
