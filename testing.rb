@@ -89,9 +89,9 @@ RUN useradd -m webdriverio
 
 # Set npm configuration for proxy (optional)
 USER webdriverio
-RUN npm config set https-proxy http://proxy.ebiz.verizon.com:80 && \
-    npm config set http-proxy http://proxy.ebiz.verizon.com:80 && \
-    npm config set registry http://registry.npmjs.org/
+
+# Create a directory for the npm project
+WORKDIR /home/webdriverio/app
 
 # Initialize npm project
 RUN npm init -y
@@ -101,5 +101,6 @@ RUN npm install --global --unsafe-perm=true --allow-root @wdio/cli @wdio/sync ch
 
 # Set default command to start a shell
 CMD ["/bin/bash"]
+
 
 
