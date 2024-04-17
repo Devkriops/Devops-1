@@ -84,9 +84,22 @@ RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key
     apt-get update && \
     apt-get install -y google-chrome-stable
 
+# Create a non-root user
+RUN useradd -m webdriverio
+
+# Set npm configuration for proxy (optional)
+USER webdriverio
+RUN npm config set https-proxy http://proxy.ebiz.verizon.com:80 && \
+    npm config set http-proxy http://proxy.ebiz.verizon.com:80 && \
+    npm config set registry http://registry.npmjs.org/
+
+# Initialize npm project
+RUN npm init -y
+
 # Install WebdriverIO CLI and necessary dependencies
-RUN npm install -g @wdio/cli @wdio/sync chromedriver
+RUN npm install --global --unsafe-perm=true --allow-root @wdio/cli @wdio/sync chromedriver
 
 # Set default command to start a shell
 CMD ["/bin/bash"]
+
 
