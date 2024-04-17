@@ -110,3 +110,33 @@ npm ERR! This is probably not a problem with npm. There is likely additional log
 npm ERR! A complete log of this run can be found in:
 npm ERR!     /root/.npm/_logs/2024-04-17T17_54_50_475Z-debug.log
 Error: building at STEP "RUN npm install -g @wdio/cli @wdio/sync chromedriver": while running runtime: exit status 1
+
+
+#################################3
+
+
+STEP 10/13: RUN npm config set https-proxy http://proxy.ebiz.verizon.com:80 &&     npm config set http-proxy http://proxy.ebiz.verizon.com:80 &&     npm config set registry http://registry.npmjs.org/
+--> 84fc17a9071f
+STEP 11/13: RUN npm init -y
+npm ERR! code EACCES
+npm ERR! syscall open
+npm ERR! path /package.json
+npm ERR! errno -13
+npm ERR! Error: EACCES: permission denied, open '/package.json'
+npm ERR!  [Error: EACCES: permission denied, open '/package.json'] {
+npm ERR!   errno: -13,
+npm ERR!   code: 'EACCES',
+npm ERR!   syscall: 'open',
+npm ERR!   path: '/package.json'
+npm ERR! }
+npm ERR! 
+npm ERR! The operation was rejected by your operating system.
+npm ERR! It is likely you do not have the permissions to access this file as the current user
+npm ERR! 
+npm ERR! If you believe this might be a permissions issue, please double-check the
+npm ERR! permissions of the file and its containing directories, or try running
+npm ERR! the command again as root/Administrator.
+
+npm ERR! A complete log of this run can be found in:
+npm ERR!     /home/webdriverio/.npm/_logs/2024-04-17T18_18_19_043Z-debug.log
+Error: building at STEP "RUN npm init -y": while running runtime: exit status 243
