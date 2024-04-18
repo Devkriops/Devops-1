@@ -62,7 +62,6 @@ https://onesecurity.verizon.com/onesecurity/rest/v1/cicd/gating/*/passthrough/<p
 }
 #########################################################
 
-
 #!/bin/bash
 
 # Generate UUID
@@ -77,5 +76,10 @@ check_status() {
     echo "$status"
 }
 
-# Check status
-check_status
+# Check status until it's success
+while [[ "$(check_status)" != "success" ]]; do
+    echo "Status: $(check_status)"
+    sleep 10 # Wait for 10 seconds before checking again
+done
+
+echo "Final Status: $(check_status)"
