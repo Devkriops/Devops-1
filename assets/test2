@@ -1,74 +1,34 @@
-const setup = require('./setup');
+# Use an official Ubuntu as a parent image
+FROM ubuntu:latest
 
-exports.config = {
-    // Runner Configuration
-    runner: 'local',
+# Set the environment variables
+ENV DEBIAN_FRONTEND=noninteractive
 
-    // Specify Test Files
-    specs: [
-        './test/specs/**/*.js'
-    ],
+# Update the package lists and install necessary packages
+RUN apt-get update && \
+    apt-get install -y \
+    wget \
+    unzip \
+    && rm -rf /var/lib/apt/lists/*
 
-    // Capabilities
-    maxInstances: 10,
-    capabilities: [{
-        browserName: 'chrome',
-        'goog:chromeOptions': {
-            args: [
-                '--no-sandbox',
-                '--disable-infobars',
-                '--headless',
-                '--disable-gpu',
-                '--window-size=1440,735'
-            ],
-            binary: '/usr/bin/google-chrome-stable'
-        }
-    }],
+# Set up ChromeDriver
+ARG CHROMEDRIVER_VERSION=94.0.4606.41
+RUN wget -q --continue -P /tmp/ "https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip" \
+    && unzip -q /tmp/chromedriver_linux64.zip -d /usr/local/bin/ \
+    && rm /tmp/chromedriver_linux64.zip \
+    && chmod +x /usr/local/bin/chromedriver
 
-    // Test Configurations
-    logLevel: 'info',
-    bail: 0,
-    baseUrl: 'http://localhost',
-    waitforTimeout: 10000,
-    connectionRetryTimeout: 120000,
-    connectionRetryCount: 3,
-    framework: 'mocha',
-    reporters: ['spec'],
-    mochaOpts: {
-        ui: 'bdd',
-        timeout: 60000
-    },
+# Verify the installation
+RUN chromedriver --version
 
-    // Hooks
-    beforeSession: async function (config, capabilities, specs) {
-        await setup();
-    }
-};
-################################################################
+# Other commands and configurations for your Dockerfile
+# ...
 
-const { remote } = require('webdriverio');
+# Set the working directory
+WORKDIR /app
 
-module.exports = async function () {
-    try {
-        const browser = await remote({
-            capabilities: {
-                browserName: 'chrome',
-                'goog:chromeOptions': {
-                    args: [
-                        '--no-sandbox',
-                        '--disable-infobars',
-                        '--headless',
-                        '--disable-gpu',
-                        '--window-size=1440,735'
-                    ]
-                }
-            },
-            path: '/usr/bin/google-chrome-stable'
-        });
-        global.browser = browser;
-    } catch (error) {
-        console.error('Error initializing browser:', error);
-        process.exit(1); // Exit with error code
-    }
-};
+# Copy your application files into the container
+COPY . .
 
+# Command to run your application
+CMD ["npm", "start"]
