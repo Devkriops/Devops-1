@@ -1,3 +1,5 @@
+const setup = require('./setup');
+
 exports.config = {
     // Runner Configuration
     runner: 'local',
@@ -39,27 +41,34 @@ exports.config = {
 
     // Hooks
     beforeSession: async function (config, capabilities, specs) {
-        const { remote } = require('webdriverio');
-        try {
-            const browser = await remote({
-                capabilities: {
-                    browserName: 'chrome',
-                    'goog:chromeOptions': {
-                        args: [
-                            '--no-sandbox',
-                            '--disable-infobars',
-                            '--headless',
-                            '--disable-gpu',
-                            '--window-size=1440,735'
-                        ]
-                    }
-                },
-                path: '/usr/bin/google-chrome-stable'
-            });
-            global.browser = browser;
-        } catch (error) {
-            console.error('Error initializing browser:', error);
-            process.exit(1); // Exit with error code
-        }
+        await setup();
     }
 };
+################################################################
+
+const { remote } = require('webdriverio');
+
+module.exports = async function () {
+    try {
+        const browser = await remote({
+            capabilities: {
+                browserName: 'chrome',
+                'goog:chromeOptions': {
+                    args: [
+                        '--no-sandbox',
+                        '--disable-infobars',
+                        '--headless',
+                        '--disable-gpu',
+                        '--window-size=1440,735'
+                    ]
+                }
+            },
+            path: '/usr/bin/google-chrome-stable'
+        });
+        global.browser = browser;
+    } catch (error) {
+        console.error('Error initializing browser:', error);
+        process.exit(1); // Exit with error code
+    }
+};
+
