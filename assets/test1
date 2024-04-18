@@ -309,3 +309,24 @@ Execution of 2 workers started at 2024-04-18T05:43:45.143Z
 2024-04-18T05:43:50.196Z INFO @wdio/local-runner: Start worker 0-1 with arg: --bail,1,--loglevel,error,/tmp/webdriverio-test/wdio.conf.js
 [0-1] 2024-04-18T05:43:52.483Z INFO @wdio/local-runner: Run worke
 
+############################################
+
+
+exports.config = {
+    // ...
+    services: [],
+    capabilities: [{
+        browserName: 'chrome',
+        'goog:chromeOptions': {
+            args: [
+                '--no-sandbox',
+                '--disable-infobars',
+                '--headless',
+                '--disable-gpu',
+                '--window-size=1440,735'
+            ],
+            binary: '/usr/bin/google-chrome-stable'
+        }
+    }],
+    // ...
+};
