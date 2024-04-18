@@ -1,0 +1,65 @@
+exports.config = {
+    // Runner Configuration
+    runner: 'local',
+
+    // Specify Test Files
+    specs: [
+        './test/specs/**/*.js'
+    ],
+
+    // Capabilities
+    maxInstances: 10,
+    capabilities: [{
+        browserName: 'chrome',
+        'goog:chromeOptions': {
+            args: [
+                '--no-sandbox',
+                '--disable-infobars',
+                '--headless',
+                '--disable-gpu',
+                '--window-size=1440,735'
+            ],
+            binary: '/usr/bin/google-chrome-stable'
+        }
+    }],
+
+    // Test Configurations
+    logLevel: 'info',
+    bail: 0,
+    baseUrl: 'http://localhost',
+    waitforTimeout: 10000,
+    connectionRetryTimeout: 120000,
+    connectionRetryCount: 3,
+    framework: 'mocha',
+    reporters: ['spec'],
+    mochaOpts: {
+        ui: 'bdd',
+        timeout: 60000
+    },
+
+    // Hooks
+    beforeSession: async function (config, capabilities, specs) {
+        const { remote } = require('webdriverio');
+        try {
+            const browser = await remote({
+                capabilities: {
+                    browserName: 'chrome',
+                    'goog:chromeOptions': {
+                        args: [
+                            '--no-sandbox',
+                            '--disable-infobars',
+                            '--headless',
+                            '--disable-gpu',
+                            '--window-size=1440,735'
+                        ]
+                    }
+                },
+                path: '/usr/bin/google-chrome-stable'
+            });
+            global.browser = browser;
+        } catch (error) {
+            console.error('Error initializing browser:', error);
+            process.exit(1); // Exit with error code
+        }
+    }
+};
