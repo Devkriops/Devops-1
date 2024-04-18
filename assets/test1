@@ -291,4 +291,21 @@ exports.config = {
     // onReload: function(oldSessionId, newSessionId) {
     // }
 }
+###############################
+
+++ cd /tmp/webdriverio-test
+++ npx wdio --bail 1 --loglevel error /tmp/webdriverio-test/wdio.conf.js
+
+Execution of 2 workers started at 2024-04-18T05:43:45.143Z
+
+2024-04-18T05:43:45.195Z INFO @wdio/cli:launcher: Run onPrepare hook
+2024-04-18T05:43:45.201Z INFO @wdio/utils: Setting up browser driver for: chrome@stable
+2024-04-18T05:43:45.236Z INFO @wdio/utils: Setting up browser binaries for: chrome@stable
+2024-04-18T05:43:46.334Z INFO webdriver: Downloading Chromedriver v124.0.6367.60
+2024-04-18T05:43:50.171Z INFO webdriver: Download of Chromedriver v124.0.6367.60 was successful
+2024-04-18T05:43:50.175Z INFO @wdio/cli:launcher: Run onWorkerStart hook
+2024-04-18T05:43:50.175Z INFO @wdio/cli:launcher: Run onWorkerStart hook
+2024-04-18T05:43:50.176Z INFO @wdio/local-runner: Start worker 0-0 with arg: --bail,1,--loglevel,error,/tmp/webdriverio-test/wdio.conf.js
+2024-04-18T05:43:50.196Z INFO @wdio/local-runner: Start worker 0-1 with arg: --bail,1,--loglevel,error,/tmp/webdriverio-test/wdio.conf.js
+[0-1] 2024-04-18T05:43:52.483Z INFO @wdio/local-runner: Run worke
 
