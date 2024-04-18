@@ -350,3 +350,31 @@ exports.config = {
     }],
     // ...
 };
+###################################################
+
+
+const { remote } = require('webdriverio');
+
+(async () => {
+    const browser = await remote({
+        capabilities: {
+            browserName: 'chrome',
+            'goog:chromeOptions': {
+                args: [
+                    '--no-sandbox',
+                    '--disable-infobars',
+                    '--headless',
+                    '--disable-gpu',
+                    '--window-size=1440,735'
+                ]
+            }
+        },
+        // Specify the path to Chrome binary here
+        path: '/usr/bin/google-chrome-stable'
+    });
+
+    // Your test code goes here
+
+    await browser.deleteSession();
+})();
+
