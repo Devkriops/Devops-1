@@ -377,4 +377,22 @@ const { remote } = require('webdriverio');
 
     await browser.deleteSession();
 })();
+####################################
+exports.config = {
+    // ...
+    capabilities: [{
+        browserName: 'chrome',
+        'goog:chromeOptions': {
+            args: [
+                '--no-sandbox',
+                '--disable-infobars',
+                '--headless',
+                '--disable-gpu',
+                '--window-size=1440,735'
+            ],
+            binary: '/usr/bin/google-chrome-stable'
+        }
+    }],
+    // ...
+};
 
