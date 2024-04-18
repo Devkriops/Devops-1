@@ -330,3 +330,23 @@ exports.config = {
     }],
     // ...
 };
+###############################################
+
+exports.config = {
+    // ...
+    services: [],
+    capabilities: [{
+        browserName: 'chrome',
+        binary: '/usr/bin/google-chrome-stable', // Update the path accordingly
+        'goog:chromeOptions': {
+            args: [
+                '--no-sandbox',
+                '--disable-infobars',
+                '--headless',
+                '--disable-gpu',
+                '--window-size=1440,735'
+            ]
+        }
+    }],
+    // ...
+};
