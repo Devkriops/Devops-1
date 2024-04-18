@@ -32,3 +32,7 @@ COPY . .
 
 # Command to run your application
 CMD ["npm", "start"]
+#######################################
+
+RROR @wdio/runner: Error: Invalid or unsupported WebDriver capabilities found ("binary"). Ensure to only use valid W3C WebDriver capabilities (see https://w3c.github.io/webdriver/#capabilities).If you run your tests on a remote vendor, like Sauce Labs or BrowserStack, make sure that you put them into vendor specific capabilities, e.g. "sauce:options" or "bstack:options". Please reach out to your vendor support team if you have further questions.
+[0-1]     at startWebDriverSession (file:///tmp/webdriverio-test/node_modules/webdriver/build/utils.js:36:19)
