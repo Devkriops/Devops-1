@@ -36,3 +36,27 @@ CMD ["npm", "start"]
 
 RROR @wdio/runner: Error: Invalid or unsupported WebDriver capabilities found ("binary"). Ensure to only use valid W3C WebDriver capabilities (see https://w3c.github.io/webdriver/#capabilities).If you run your tests on a remote vendor, like Sauce Labs or BrowserStack, make sure that you put them into vendor specific capabilities, e.g. "sauce:options" or "bstack:options". Please reach out to your vendor support team if you have further questions.
 [0-1]     at startWebDriverSession (file:///tmp/webdriverio-test/node_modules/webdriver/build/utils.js:36:19)
+
+######################################
+
+https://onesecurity.verizon.com/onesecurity/rest/v1/cicd/uuid
+
+sed -i "s|^project\.passthrough=.*$|project\.passthrough=$UUID|g" job.propertie
+
+https://onesecurity.verizon.com/onesecurity/rest/v1/cicd/gating/*/passthrough/<project.passthrough>
+
+{
+    "status": "processing",
+    "details": "Scanning has not completed yet."
+}
+
+{
+    "status": "success",
+    "details": "Successfully processed scan.",
+    "duration": 3.0460000038146973,
+    "critical": 25,
+    "high": 66,
+    "medium": 82,
+    "low": 19,
+    "maxExploitabilityScore": 4
+}
