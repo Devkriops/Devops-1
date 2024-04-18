@@ -1,0 +1,50 @@
+exports.config = {
+    // ====================
+    // Runner Configuration
+    // ====================
+    runner: 'local',
+    // ==================
+    // Specify Test Files
+    // ==================
+    specs: [
+        './test/specs/**/*.js'
+    ],
+    // ============
+    // Capabilities
+    // ============
+    maxInstances: 10,
+    capabilities: [{
+        maxInstances: 5,
+        browserName: 'chrome',
+        'goog:chromeOptions': {
+            binary: '/path/to/chrome/executable'
+        }
+    }],
+    // ===================
+    // Test Configurations
+    // ===================
+    logLevel: 'info',
+    baseUrl: 'http://localhost',
+    waitforTimeout: 10000,
+    connectionRetryTimeout: 90000,
+    connectionRetryCount: 3,
+    services: ['chromedriver'],
+    // ==================
+    // Framework Options
+    // ==================
+    framework: 'mocha',
+    reporters: ['spec'],
+    mochaOpts: {
+        ui: 'bdd',
+        timeout: 60000
+    },
+    // ========
+    // Hooks
+    // ========
+    before: function (capabilities, specs) {
+        // Code to be run before running tests
+    },
+    after: function (result, capabilities, specs) {
+        // Code to be run after running tests
+    }
+};
