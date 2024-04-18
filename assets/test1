@@ -61,10 +61,9 @@ exports.config = {
                 '--disable-gpu',
                 '--window-size=1440,735'
             ],
-          },
-          path: '/usr/bin/google-chrome-stable'
+            binary: '/usr/bin/google-chrome-stable'
+        }
     }],
-
     //
     // ===================
     // Test Configurations
