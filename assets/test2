@@ -60,3 +60,22 @@ https://onesecurity.verizon.com/onesecurity/rest/v1/cicd/gating/*/passthrough/<p
     "low": 19,
     "maxExploitabilityScore": 4
 }
+#########################################################
+
+
+#!/bin/bash
+
+# Generate UUID
+UUID=$(curl -s https://onesecurity.verizon.com/onesecurity/rest/v1/cicd/uuid)
+
+# Update job.properties file with UUID
+sed -i "s|^project\.passthrough=.*$|project\.passthrough=$UUID|g" job.properties
+
+# Function to check status
+check_status() {
+    local status=$(curl -s "https://onesecurity.verizon.com/onesecurity/rest/v1/cicd/gating/*/passthrough/$UUID" | jq -r '.status')
+    echo "$status"
+}
+
+# Check status
+check_status
