@@ -2,14 +2,14 @@
 #!/bin/bash
 
 # Generate UUID
-UUID=$(wget -qO- https://onesecurity.verizon.com/onesecurity/rest/v1/cicd/uuid)
+UUID=$(wget -qO- url)
 
 # Update job.properties file with UUID
 sed -i "s|^project\.passthrough=.*$|project\.passthrough=$UUID|g" job.properties
 
 # Function to check status and extract fields
 check_status() {
-    local status_output=$(wget -qO- "https://onesecurity.verizon.com/onesecurity/rest/v1/cicd/gating/*/passthrough/$UUID")
+    local status_output=$(wget -qO- "url")
     local status=$(echo "$status_output" | jq -r '.status')
     local critical=$(echo "$status_output" | jq -r '.critical')
     local high=$(echo "$status_output" | jq -r '.high')
