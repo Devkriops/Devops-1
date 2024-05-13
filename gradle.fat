@@ -1,0 +1,12 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '7.1.0' // Use the latest version
+}
+
+shadowJar {
+    baseName = 'your-project-name-all'
+    version = '1.0.0'
+    manifest {
+        attributes 'Main-Class': 'com.example.MainClass' // Replace with your main class
+    }
+}
