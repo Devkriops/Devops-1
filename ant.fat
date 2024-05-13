@@ -1,0 +1,51 @@
+<project name="YourProject" default="build" basedir=".">
+    <!-- Define properties -->
+    <property name="src.dir" value="src"/>
+    <property name="build.dir" value="build"/>
+    <property name="dist.dir" value="dist"/>
+    <property name="lib.dir" value="lib"/>
+
+    <!-- Initialize -->
+    <target name="init">
+        <mkdir dir="${build.dir}"/>
+        <mkdir dir="${dist.dir}"/>
+    </target>
+
+    <!-- Compile -->
+    <target name="compile" depends="init">
+        <javac srcdir="${src.dir}" destdir="${build.dir}"/>
+    </target>
+
+    <!-- Create a JAR -->
+    <target name="jar" depends="compile">
+        <jar destfile="${dist.dir}/YourProject.jar" basedir="${build.dir}">
+            <fileset dir="${build.dir}" includes="**/*.class"/>
+        </jar>
+    </target>
+
+    <!-- Create a fat JAR with dependencies -->
+    <target name="fatjar" depends="jar">
+        <path id="classpath">
+            <!-- Include all JARs from the lib directory -->
+            <fileset dir="${lib.dir}" includes="*.jar"/>
+        </path>
+
+        <!-- Include all JARs from the lib directory -->
+        <zipgroupfileset dir="${lib.dir}" includes="*.jar" prefix="lib"/>
+
+        <!-- Add compiled classes to the fat JAR -->
+        <zipfileset src="${dist.dir}/YourProject.jar"/>
+
+        <!-- Create the fat JAR -->
+        <zip destfile="${dist.dir}/YourProject-fat.jar">
+            <fileset dir="${build.dir}" includes="**/*.class"/>
+            <fileset dir="${build.dir}" includes="**/*.xml"/> <!-- Include other necessary resources -->
+            <fileset refid="classpath"/>
+        </zip>
+    </target>
+
+    <!-- Build -->
+    <target name="build" depends="fatjar">
+        <!-- Add any additional build steps -->
+    </target>
+</project>
