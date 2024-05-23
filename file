@@ -1,0 +1,105 @@
+#!/bin/bash
+
+set -e
+
+
+export http_proxy=$httpproxy
+echo "$http_proxy"
+export https_proxy=$httpsproxy
+echo "$https_proxy"
+export no_proxy=$noproxy
+echo "$no_proxy"
+export NVM_DIR="$HOME/.nvm" || [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" ||[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+
+source "/root/.sdkman/bin/sdkman-init.sh"
+
+
+# java -version
+# echo $JAVA_HOME
+
+echo '-------------------------------------------------------------------------------------------------------'
+echo "BlackDuck: ENV SETUP "
+echo '-------------------------------------------------------------------------------------------------------'
+
+echo "---------------------------------------------------------"
+echo "Translating source code based on your language selection"
+echo "----------------------------------------------------------"
+
+echo "The language selection for source code translation is $JAVA"
+
+        case $JAVA in
+
+
+           "java8")
+                sdk use java $JAVA_VERSION.0.362-tem
+                java -version
+                ;;
+
+           "java11" | "kotlin")
+                sdk use java $JAVA_VERSION.0.18-tem
+                java -version
+                ;;
+
+           "java17")
+                sdk use java $JAVA_VERSION.0.6-tem
+                java -version
+                ;;
+          *)
+                echo -n "Default java will be use"
+                ;;
+        esac
+
+
+
+
+echo "The language selection for source code translation is $LANG"
+
+        case $LANG in
+
+           "ant")
+                sdk use ant $VERSION
+                ant -version
+                ;;
+
+           "maven")
+                sdk use maven $VERSION
+                mvn -v
+                cd /apps/source_code
+                ls -ltr
+                mkdir /root/.m2
+                cp -R /apps/test/* /root/.m2/
+                ls -ltr /root/.m2
+                mvn clean install
+                ;;
+
+           "gradle")
+                sdk use gradle $VERSION
+                gradle -v
+                ;;
+           "npm")
+               if [ "$VERSION" = "8.6.0" ]
+               then
+                    nvm use v18.0.0
+               elif [ "$VERSION" = "8.11.0" ]
+               then
+                    nvm use v17.9.1
+               elif [ "$VERSION" = "8.19.2" ]
+               then
+                    nvm use v18.10.0
+               elif [ "$VERSION" = "9.5.1" ]
+               then
+                    nvm use v19.8.1
+               elif [ "$VERSION" = "9.6.3" ]
+               then
+                    nvm use v19.9.0
+               else
+                    echo "NPM version doesn't matches"
+               fi
+               npm --version
+                ;;
+
+          *)
+                echo -n "Invalid language. Please enter correct language"
+                exit
+                ;;
+        esac
