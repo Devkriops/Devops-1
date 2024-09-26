@@ -1,39 +1,42 @@
-# Use a base image
-FROM centos:7
+# Use a base image (e.g., CentOS or Ubuntu)
+FROM ubuntu:20.04
 
-# Enable EPEL repository
-RUN curl -o /etc/yum.repos.d/epel.repo https://dl.fedoraproject.org/pub/epel/9/Everything/x86_64/Packages/e/epel-release-9-1.el9.noarch.rpm && \
-    yum -y install epel-release && \
-    yum clean all
+# Install required packages
+RUN apt-get update && apt-get install -y \
+    wget \
+    tar \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install Development Tools (which includes bison)
-RUN yum -y groupinstall "Development Tools" && \
-    yum -y install bison && \
-    yum clean all
+# Define Go versions to install
+ENV GO_VERSIONS=(
+    "1.17.6"
+    "1.18.3"
+)
 
-# Install necessary dependencies
-RUN yum -y update && \
-    yum install -y curl git && \
-    yum clean all
+# Create directories for each Go version
+RUN mkdir -p /usr/local/go1.17.6 /usr/local/go1.18.3
 
-# Install gvm (Go Version Manager)
-RUN curl -s -S -L https://raw.githubusercontent.com/moovweb/gvm/master/binscripts/gvm-installer | bash && \
-    echo '[[ -s "$HOME/.gvm/scripts/gvm" ]] && source "$HOME/.gvm/scripts/gvm"' >> /root/.bash_profile
+# Download and install each Go version
+RUN for version in ${GO_VERSIONS[@]}; do \
+        wget -q https://golang.org/dl/go$version.linux-amd64.tar.gz && \
+        tar -C /usr/local/go$version --strip-components=1 -xzf go$version.linux-amd64.tar.gz && \
+        rm go$version.linux-amd64.tar.gz; \
+    done
 
-# Load gvm
-RUN /bin/bash -c "source /root/.bash_profile"
+# Create a script to switch Go versions
+RUN echo '#!/bin/bash\n\
+if [ -z "$1" ]; then\n\
+  echo "Please specify a Go version, e.g., setgo.sh 1.17.6"\n\
+  exit 1\n\
+fi\n\
+export GOROOT=/usr/local/go$1\n\
+export PATH=$GOROOT/bin:$PATH\n\
+go version\n' > /usr/local/bin/setgo.sh && \
+chmod +x /usr/local/bin/setgo.sh
 
-# Install specific Go versions
-ENV GVM_ROOT /root/.gvm
-ENV PATH $GVM_ROOT/bin:$PATH
+# Set the default Go version (optional)
+ENV GOROOT=/usr/local/go1.17.6
+ENV PATH=$GOROOT/bin:$PATH
 
-RUN bash -c "source /root/.bash_profile && \
-    gvm install go1.20 && \
-    gvm install go1.21 && \
-    gvm use go1.21 --default"
-
-# Verify installation
-RUN go version
-
-# Set the default command
-CMD ["/bin/bash"]
+# Default command
+CMD ["bash"]
