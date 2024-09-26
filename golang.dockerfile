@@ -1,6 +1,16 @@
 # Use a base image
 FROM centos:7
 
+# Enable EPEL repository
+RUN curl -o /etc/yum.repos.d/epel.repo https://dl.fedoraproject.org/pub/epel/9/Everything/x86_64/Packages/e/epel-release-9-1.el9.noarch.rpm && \
+    yum -y install epel-release && \
+    yum clean all
+
+# Install Development Tools (which includes bison)
+RUN yum -y groupinstall "Development Tools" && \
+    yum -y install bison && \
+    yum clean all
+
 # Install necessary dependencies
 RUN yum -y update && \
     yum install -y curl git && \
