@@ -1,0 +1,32 @@
+<project name="HelloWorld" default="run">
+    <property name="src.dir" value="src" />
+    <property name="bin.dir" value="bin" />
+    <property name="lib.dir" value="lib" />
+    <property name="jar.name" value="HelloWorld.jar" />
+
+    <target name="clean">
+        <delete dir="${bin.dir}" />
+    </target>
+
+    <target name="compile">
+        <mkdir dir="${bin.dir}" />
+        <javac srcdir="${src.dir}" destdir="${bin.dir}" includeantruntime="false">
+            <classpath>
+                <pathelement location="${lib.dir}/commons-collections-3.2.1.jar" />
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="jar" depends="compile">
+        <mkdir dir="${lib.dir}" />
+        <jar destfile="${lib.dir}/${jar.name}" basedir="${bin.dir}" />
+    </target>
+
+    <target name="run" depends="jar">
+        <java jar="${lib.dir}/${jar.name}" fork="true">
+            <classpath>
+                <pathelement location="${lib.dir}/commons-collections-3.2.1.jar" />
+            </classpath>
+        </java>
+    </target>
+</project>
