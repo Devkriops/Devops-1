@@ -1,11 +1,7 @@
-#!/bin/bsdh
-
-
-status="$(sudo systemctl status falcon-sensor | grep connected)"
-
-if [ "${status}" != 0 ]
-then
-echo connected
-else
-echo not connected
-fi
+Feature,Netrise,JFrog Xray
+Vulnerability Detection,More vulnerabilities, no fat JAR needed,Fewer vulnerabilities, fat JAR needed
+SBOM Generation,More comprehensive, no fat JAR needed,Requires fat JAR for complete SBOM
+Logging,More specific, detailed logs, tailored to firmware,General logging, good for software artifacts
+Ease of Use,Easier (no fat JAR), faster insights,Requires bundling (fat JAR), more steps involved
+Specialization,Firmware, IoT, embedded systems,Software development, containerized apps
+Use Case Fit,Best for firmware and specialized packages,Best for CI/CD and software artifact scanning
