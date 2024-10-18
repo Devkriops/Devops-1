@@ -90,7 +90,7 @@
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-server</artifactId>
-            <version>9.4.6.v20170531</version>
+            <version>9.4.55.v20240627</version>
         </dependency>
 
         <!-- Vulnerable: Apache Tomcat with CVE-2020-9484 -->
