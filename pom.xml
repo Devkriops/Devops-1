@@ -7,6 +7,49 @@
     <artifactId>vulnerable-app</artifactId>
     <version>1.0-SNAPSHOT</version>
 
+         
+         <build>
+    <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <version>3.3.0</version>
+            <executions>
+                <execution>
+                    <id>make-assembly</id>
+                    <phase>package</phase>
+                    <goals>
+                        <goal>single</goal>
+                    </goals>
+                    <configuration>
+                        <descriptorRefs>
+                            <descriptorRef>jar-with-dependencies</descriptorRef>
+                        </descriptorRefs>
+                        <archive>
+                            <manifest>
+                                <mainClass>your.main.class.Here</mainClass>
+                            </manifest>
+                        </archive>
+                        <formats>
+                            <format>tar.gz</format>
+                        </formats>
+                        <includeBaseDirectory>false</includeBaseDirectory>
+                        <fileSets>
+                            <fileSet>
+                                <directory>${project.build.directory}</directory>
+                                <includes>
+                                    <include>${project.build.finalName}.jar</include>
+                                </includes>
+                                <outputDirectory>/</outputDirectory>
+                            </fileSet>
+                        </fileSets>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
+    </plugins>
+</build>
+
     <dependencies>
 
         <!-- Vulnerable: Log4j with CVE-2021-44228 (Log4Shell) -->
