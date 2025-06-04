@@ -2,14 +2,8 @@ pipeline {
     agent any
 
     environment {
-        // Required environment variables
-        JF_URL = credentials("JF_URL")
-        JF_ACCESS_TOKEN = credentials("JF_ACCESS_TOKEN")
-        JF_GIT_TOKEN = credentials("JF_GIT_TOKEN")
-        JF_GIT_PROVIDER = 'github' // or gitlab / bitbucketServer / azureRepos
-
-        // Optional: Set working directory if needed
-        JF_WORKING_DIR = "."
+        JF_GIT_PROVIDER = 'github'
+        JF_WORKING_DIR = '.'
     }
 
     stages {
@@ -19,18 +13,19 @@ pipeline {
             }
         }
 
-        stage('Download Frogbot') {
+        stage('Download Frogbot and Scan') {
             steps {
-                sh '''
-                curl -fLg "https://releases.jfrog.io/artifactory/frogbot/v2/latest/getFrogbot.sh" | sh
-                chmod +x frogbot
-                '''
-            }
-        }
-
-        stage('Run Frogbot Scan') {
-            steps {
-                sh './frogbot scan-pull-request'
+                withCredentials([
+                    string(credentialsId: 'JF_URL', variable: 'JF_URL'),
+                    string(credentialsId: 'JF_ACCESS_TOKEN', variable: 'JF_ACCESS_TOKEN'),
+                    string(credentialsId: 'JF_GIT_TOKEN', variable: 'JF_GIT_TOKEN')
+                ]) {
+                    sh '''
+                    curl -fLg "https://releases.jfrog.io/artifactory/frogbot/v2/latest/getFrogbot.sh" | sh
+                    chmod +x frogbot
+                    ./frogbot scan-pull-request
+                    '''
+                }
             }
         }
     }
