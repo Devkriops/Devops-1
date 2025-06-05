@@ -31,8 +31,6 @@ pipeline {
     }
 }
 
-version: 1
-projects:
-  - workingDirs:
-      - .
+frogbot scan-pull-request --local-dir .
+
 
