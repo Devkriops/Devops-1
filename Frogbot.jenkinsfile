@@ -31,6 +31,12 @@ pipeline {
     }
 }
 
-frogbot scan-pull-request --local-dir .
+version: 1
+repos:
+  - repoName: my-org/my-repo
+    branches:
+      - name: main
+        workingDirs:
+          - .
 
 
