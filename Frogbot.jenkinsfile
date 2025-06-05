@@ -30,3 +30,9 @@ pipeline {
         }
     }
 }
+
+version: 1
+projects:
+  - workingDirs:
+      - .
+
