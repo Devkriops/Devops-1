@@ -47,4 +47,24 @@ sudo ln -sfn apache-maven-3.9.6 apache-maven
 export MAVEN_HOME=/opt/apache-maven
 export PATH=$MAVEN_HOME/bin:$PATH
 
+pipeline {
+  agent any
+
+  stages {
+    stage('scan') {
+      steps {
+        script {
+          withCredentials([usernamePassword(credentialsId: 'scan-creds', usernameVariable: 'USER', passwordVariable: 'PASSWORD')]) {
+            sh """
+              echo "Running scan with user \$USER"
+              export user=\$USER
+              export password=\$PASSWORD
+              # your scan command here
+            """
+          }
+        }
+      }
+    }
+  }
+}
 
