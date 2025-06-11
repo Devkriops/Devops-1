@@ -68,3 +68,20 @@ pipeline {
   }
 }
 
+
+pipeline {
+    agent any
+    stages {
+        stage('Print MR Branch') {
+            steps {
+                script {
+                    echo "Source Branch: ${env.gitlabSourceBranch}"
+                    echo "Target Branch: ${env.gitlabTargetBranch}"
+                    echo "Merge Action: ${env.gitlabActionType}"
+                }
+            }
+        }
+    }
+}
+
+
