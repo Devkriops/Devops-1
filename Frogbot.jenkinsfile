@@ -84,4 +84,6 @@ pipeline {
     }
 }
 
+sed -i "s|^project\.passthrough=.*$|project.passthrough=$API_TOKEN|g" "${WORKSPACE}/job.properties"
+grep "^project.passthrough=" "${WORKSPACE}/job.properties"
 
