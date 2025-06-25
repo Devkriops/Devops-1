@@ -87,3 +87,13 @@ pipeline {
 sed -i "s|^project\.passthrough=.*$|project.passthrough=$API_TOKEN|g" "${WORKSPACE}/job.properties"
 grep "^project.passthrough=" "${WORKSPACE}/job.properties"
 
+
+withCredentials([
+    string(credentialsId: 'JF_URL', variable: 'JF_URL'),
+    string(credentialsId: 'JF_ACCESS_TOKEN', variable: 'JF_ACCESS_TOKEN'),
+    string(credentialsId: 'JF_GIT_TOKEN', variable: 'JF_GIT_TOKEN'),
+    usernamePassword(credentialsId: 'JF_USERNAME_PASSWORD', usernameVariable: 'JF_USER', passwordVariable: 'JF_PASS')
+]) {
+    // Your script logic using:
+    // $JF_URL, $JF_ACCESS_TOKEN, $JF_GIT_TOKEN, $JF_USER, and $JF_PASS
+}
