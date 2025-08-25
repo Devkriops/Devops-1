@@ -63,7 +63,7 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
-            <version>4.3.16.RELEASE</version>
+            <version>6.1.14</version>
         </dependency>
 
         <!-- Vulnerable: Jackson Databind with CVE-2020-8840 -->
